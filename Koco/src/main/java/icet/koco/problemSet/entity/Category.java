@@ -5,7 +5,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,5 +31,8 @@ public class Category {
 
     @Column(name = "name", nullable = false, length = 20)
     private String name;
+
+    @OneToMany(mappedBy = "category")
+    private List<ProblemCategory> problemCategories = new ArrayList<>();
 
 }

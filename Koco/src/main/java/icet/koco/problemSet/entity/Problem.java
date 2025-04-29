@@ -1,6 +1,8 @@
 package icet.koco.problemSet.entity;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.*;
 
 @Entity
@@ -30,14 +32,17 @@ public class Problem {
     private String title;
 
     // 문제 설명
+    @Lob
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
 
     // 입력 설명
+    @Lob
     @Column(name = "input_description", nullable = false, columnDefinition = "TEXT")
     private String inputDescription;
 
     // 출력 설명
+    @Lob
     @Column(name = "output_description", nullable = false, columnDefinition = "TEXT")
     private String outputDescription;
 
@@ -76,4 +81,12 @@ public class Problem {
     // 백준 문제 링크
     @Column(name = "boj_url", nullable = false, length = 100)
     private String bojUrl;
+
+    // 매핑
+    @OneToMany(mappedBy = "problem")
+    private List<ProblemSetProblem> problemSetProblems = new ArrayList<>();
+
+    // 매핑
+    @OneToMany(mappedBy = "problem")
+    private List<ProblemCategory> problemCategories = new ArrayList<>();
 }

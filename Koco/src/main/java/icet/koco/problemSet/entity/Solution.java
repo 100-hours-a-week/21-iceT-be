@@ -1,6 +1,8 @@
 package icet.koco.problemSet.entity;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -43,4 +45,7 @@ public class Solution {
     // 생성 일자
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "solution")
+    private List<ProblemSetSolution> problemSetSolutions = new ArrayList<>();
 }
