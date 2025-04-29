@@ -4,7 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="04cb8b11-cbc8-4aa1-a304-6ecca318280e" name="Changes" comment="" />
+    <list default="true" id="04cb8b11-cbc8-4aa1-a304-6ecca318280e" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/auth/entity/OAuth.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/enums/UserRole.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/user/entity/UserAlgorithmStats.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/user/entity/UserDetail.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/user/entity/Users.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Koco/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/Koco/src/main/resources/application.properties" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -31,6 +39,14 @@
         </projects_view>
       </state>
     </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+        <option value="Enum" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -68,7 +84,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "Spring Boot.KocoApplication.executor": "Run",
-    "git-widget-placeholder": "chore/2-setting",
+    "git-widget-placeholder": "feat/4-entity-repository",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/Users/yeon/Documents/GitHub/21-iceT-be",
     "node.js.detected.package.eslint": "true",
@@ -102,7 +118,8 @@
       <option name="presentableId" value="Default" />
       <updated>1745826088887</updated>
       <workItem from="1745826089993" duration="1963000" />
-      <workItem from="1745890171095" duration="8582000" />
+      <workItem from="1745890171095" duration="11672000" />
+      <workItem from="1745905877463" duration="3753000" />
     </task>
     <servers />
   </component>
