@@ -32,12 +32,12 @@ public class Survey {
     private Long id;
 
     //사용자 ID (users 테이블 FK)
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     // 출제집 ID (problemSet 테이블 PK)
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "problem_set_id", nullable = false)
     private ProblemSet problemSet;
 

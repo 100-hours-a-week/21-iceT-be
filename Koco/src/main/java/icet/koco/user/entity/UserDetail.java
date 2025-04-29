@@ -24,7 +24,7 @@ public class UserDetail {
     private User user;
 
     // 군집
-    @ManyToOne
+    @ManyToOne (fetch = FetchType.LAZY)
     @JoinColumn(name = "cluster_id", nullable = false)
     private Cluster cluster;
 
