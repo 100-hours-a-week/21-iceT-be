@@ -5,12 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="04cb8b11-cbc8-4aa1-a304-6ecca318280e" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/problemSet/entity/ProblemSet.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/enums/DifficultyLevel.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/problemSet/entity/Surveys.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources/b53a4fef-5b2d-4b59-9404-b62a8acb23ae.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/b53a4fef-5b2d-4b59-9404-b62a8acb23ae.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/auth/entity/OAuth.java" beforeDir="false" afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/auth/entity/OAuth.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/problem/entity/Problem.java" beforeDir="false" afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/problemSet/entity/Problem.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/user/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/user/entity/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/problemSet/entity/ProblemSet.java" beforeDir="false" afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/problemSet/entity/ProblemSet.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,8 +41,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Enum" />
         <option value="Class" />
+        <option value="Enum" />
       </list>
     </option>
   </component>
@@ -118,7 +117,7 @@
       <updated>1745826088887</updated>
       <workItem from="1745826089993" duration="1963000" />
       <workItem from="1745890171095" duration="11672000" />
-      <workItem from="1745905877463" duration="10951000" />
+      <workItem from="1745905877463" duration="15776000" />
     </task>
     <servers />
   </component>
