@@ -8,6 +8,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
@@ -25,7 +26,7 @@ import lombok.Setter;
 @Setter
 @Builder
 @Table(name = "Users")
-public class Users {
+public class User {
 
     @Id // PK
     @Column(name = "id", nullable = false)
@@ -55,6 +56,7 @@ public class Users {
     private String statusMsg;
 
     // 회원 프로필 이미지
+    @Lob
     @Column(name = "profile_img_url")
     private String profileImgUrl;
 
