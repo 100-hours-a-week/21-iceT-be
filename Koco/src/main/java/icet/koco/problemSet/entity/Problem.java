@@ -1,4 +1,4 @@
-package icet.koco.problem.entity;
+package icet.koco.problemSet.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
