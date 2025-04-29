@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "surveys", uniqueConstraints = {
+@Table(name = "survey", uniqueConstraints = {
     @UniqueConstraint(
         name = "uq_user_problemset_problem",
         columnNames = {"user_id", "problem_set_id", "problem_id"}
@@ -23,7 +23,7 @@ import lombok.Setter;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Surveys {
+public class Survey {
 
     // id (PK)
     @Id
