@@ -5,10 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="04cb8b11-cbc8-4aa1-a304-6ecca318280e" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/auth/repository/OAuthRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/problemSet/repository/CategoryRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/problemSet/repository/ProblemCategoryRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/problemSet/repository/ProblemRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/problemSet/repository/ProblemSetProblemRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/problemSet/repository/ProblemSetRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/problemSet/repository/ProblemSetSolutionRespository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/problemSet/repository/SolutionRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/problemSet/repository/SurveyRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/user/repository/ClusterRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/user/repository/UserAlgorithmStatsRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/user/repository/UserDetailRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/user/repository/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/b53a4fef-5b2d-4b59-9404-b62a8acb23ae.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/b53a4fef-5b2d-4b59-9404-b62a8acb23ae.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/problemSet/entity/Survey.java" beforeDir="false" afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/problemSet/entity/Survey.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/user/entity/UserAlgorithmStats.java" beforeDir="false" afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/user/entity/UserAlgorithmStats.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/user/entity/UserDetail.java" beforeDir="false" afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/user/entity/UserDetail.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/user/entity/Cluster.java" beforeDir="false" afterPath="$PROJECT_DIR$/Koco/src/main/java/icet/koco/user/entity/Cluster.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,6 +55,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Enum" />
+        <option value="Interface" />
         <option value="Class" />
       </list>
     </option>
@@ -68,36 +83,36 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "Gradle./Users/yeon/Documents/GitHub/21-iceT-be/demo/build.gradle.executor": "Run",
-    "Gradle.Build Koco.executor": "Run",
-    "Gradle.Koco.executor": "Run",
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "Spring Boot.KocoApplication.executor": "Run",
-    "git-widget-placeholder": "feat/4-entity-repository",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/yeon/Documents/GitHub/21-iceT-be",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.sourceCode.Java",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;Gradle./Users/yeon/Documents/GitHub/21-iceT-be/demo/build.gradle.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Build Koco.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Koco.executor&quot;: &quot;Run&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Spring Boot.KocoApplication.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feat/4-entity-repository&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/yeon/Documents/GitHub/21-iceT-be&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "mysql"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;mysql&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -116,7 +131,9 @@
       <updated>1745826088887</updated>
       <workItem from="1745826089993" duration="1963000" />
       <workItem from="1745890171095" duration="11672000" />
-      <workItem from="1745905877463" duration="24796000" />
+      <workItem from="1745905877463" duration="27840000" />
+      <workItem from="1745971219995" duration="134000" />
+      <workItem from="1745971370107" duration="6318000" />
     </task>
     <servers />
   </component>

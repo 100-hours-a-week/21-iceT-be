@@ -11,12 +11,13 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class Cluster {
-
+    // id
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
+    // 알고리즘 이름
     @Column(name = "name", nullable = false, length = 20)
     private String name;
 }
