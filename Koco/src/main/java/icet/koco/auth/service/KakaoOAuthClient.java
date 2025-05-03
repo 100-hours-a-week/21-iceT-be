@@ -6,6 +6,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Slf4j
@@ -25,17 +28,24 @@ public class KakaoOAuthClient {
     private String redirectUri;
 
     public KakaoUserResponse getUserInfo(String code) {
-        String token = kakaoWebClient.post()
-            .uri("https://kauth.kakao.com/oauth/token")
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .bodyValue("grant_type=authorization_code&client_id=" + clientId +
-                "&client_secret=" + clientSecret +
-                "&redirect_uri=" + redirectUri + "&code=" + code)
-            .retrieve()
-            .bodyToMono(KakaoTokenResponse.class)
-            .block()
-            .getAccess_token();
 
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("grant_type", "authorization_code");
+        formData.add("client_id", clientId);
+        formData.add("client_secret", clientSecret);
+        formData.add("redirect_uri", redirectUri);
+        formData.add("code", code);
+
+
+
+        String token = kakaoWebClient.post()
+                .uri("https://kauth.kakao.com/oauth/token")
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .body(BodyInserters.fromFormData(formData))
+                .retrieve()
+                .bodyToMono(KakaoTokenResponse.class)
+                .block()
+                .getAccess_token();
         return kakaoWebClient.get()
             .uri("https://kapi.kakao.com/v2/user/me")
             .header("Authorization", "Bearer " + token)

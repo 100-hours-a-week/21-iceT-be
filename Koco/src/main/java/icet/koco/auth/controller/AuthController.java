@@ -17,7 +17,7 @@ public class AuthController {
     private final AuthService authService;
     private final LogoutService logoutService;
 
-    @CrossOrigin(origins = "*")
+    @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
     @GetMapping("/callback")
     public ResponseEntity<AuthResponse> kakaoCallback(@RequestParam("code") String code,
         HttpServletResponse response) {

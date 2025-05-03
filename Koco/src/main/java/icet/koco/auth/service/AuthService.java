@@ -1,5 +1,6 @@
 package icet.koco.auth.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import icet.koco.auth.dto.AuthResponse;
 import icet.koco.auth.dto.KakaoUserResponse;
 import icet.koco.auth.dto.RefreshResponse;
@@ -30,8 +31,12 @@ public class AuthService {
     public AuthResponse loginWithKakao(String code, HttpServletResponse response) {
         KakaoUserResponse kakaoUser = kakaoOAuthClient.getUserInfo(code);
         Optional<User> userOpt = userRepository.findByEmail(kakaoUser.getEmail());
+
+        System.out.println(userOpt.isPresent());
+
         if (userOpt.isPresent()) {
             User user = userOpt.get();
+
 
             // 탈퇴 사용자면 deletedAt만 null로 하고 복구처리
             if (user.getDeletedAt() != null) {
@@ -50,20 +55,19 @@ public class AuthService {
             System.out.println(">>>>> (AuthService: loginWithKakao) Access token: " + accessToken);
             System.out.println(">>>>> (AuthService: loginWithKakao) Refresh token: " + refreshToken);
 
-            // accessToken 전달
-            Cookie cookie = new Cookie("access_token", accessToken);
-            cookie.setHttpOnly(true);
-            cookie.setMaxAge(30 * 60); // 30분 (JWT 만료와 맞춤)
-            cookie.setPath("/");
-            response.addCookie(cookie);
+// access_token 쿠키 직접 설정
+            response.setHeader("Set-Cookie",
+                    "access_token=" + accessToken + "; " +
+                            "HttpOnly; Path=/; Max-Age=" + (30 * 60) + "; " +
+                            "SameSite=None; ");
 
-            Cookie refreshCookie = new Cookie("refresh_token", refreshToken);
-            refreshCookie.setHttpOnly(true);
-            refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7일
-            refreshCookie.setPath("/");
-            response.addCookie(refreshCookie);
+// refresh_token 쿠키 직접 설정
+            response.addHeader("Set-Cookie",
+                    "refresh_token=" + refreshToken + "; " +
+                            "HttpOnly; Path=/; Max-Age=" + (7 * 24 * 60 * 60) + "; " +
+                            "SameSite=None; ");
 
-            return AuthResponse.builder()
+            AuthResponse authResponse = AuthResponse.builder()
                 .code("LOGIN_SUCCESS")
                 .message("로그인 성공. 토큰 발급 완료")
                 .data(AuthResponse.AuthData.builder()
@@ -72,46 +76,52 @@ public class AuthService {
                     .isRegistered(true)
                     .build())
                 .build();
+
+            return authResponse;
+        }
+        else {
+            // 신규 회원
+
+            User newUser = userRepository.save(User.builder()
+                    .email(kakaoUser.getEmail())
+                    .name(kakaoUser.getName())
+                    .nickname("hyemi")
+                    .createdAt(LocalDateTime.now())
+                    .build());
+            String refreshToken = jwtTokenProvider.createRefreshToken(newUser);
+            String accessToken = jwtTokenProvider.createAccessToken(newUser);
+            oauthRepository.save(OAuth.builder()
+                    .provider("kakao")
+                    .providerId(kakaoUser.getProviderId())
+                    .user(newUser)
+                    .refreshToken(refreshToken)
+                    .build());
+
+            // access_token 쿠키 직접 설정
+            response.setHeader("Set-Cookie",
+                    "access_token=" + accessToken + "; " +
+                            "HttpOnly; Path=/; Max-Age=" + (30 * 60) + "; " +
+                            "SameSite=None; ");
+
+// refresh_token 쿠키 직접 설정
+            response.addHeader("Set-Cookie",
+                    "refresh_token=" + refreshToken + "; " +
+                            "HttpOnly; Path=/; Max-Age=" + (7 * 24 * 60 * 60) + "; " +
+                            "SameSite=None; ");
+
+
+
+            return AuthResponse.builder()
+                    .code("LOGIN_SUCCESS")
+                    .message("로그인 성공. 토큰 발급 완료")
+                    .data(AuthResponse.AuthData.builder()
+                            .email(newUser.getEmail())
+                            .name(newUser.getName())
+                            .isRegistered(false)
+                            .build())
+                    .build();
         }
 
-        // 신규 회원
-        User newUser = userRepository.save(User.builder()
-            .email(kakaoUser.getEmail())
-            .name(kakaoUser.getName())
-            .createdAt(LocalDateTime.now())
-            .build());
-
-        String refreshToken = jwtTokenProvider.createRefreshToken(newUser);
-        String accessToken = jwtTokenProvider.createAccessToken(newUser);
-        oauthRepository.save(OAuth.builder()
-            .provider("kakao")
-            .providerId(kakaoUser.getProviderId())
-            .user(newUser)
-            .refreshToken(refreshToken)
-            .build());
-
-        Cookie accessCookie = new Cookie("access_token", accessToken);
-        accessCookie.setHttpOnly(true);
-        accessCookie.setMaxAge(30 * 60); // 30분
-        accessCookie.setPath("/");
-        response.addCookie(accessCookie);
-
-        Cookie refreshCookie = new Cookie("refresh_token", refreshToken);
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7일
-        refreshCookie.setPath("/");
-        response.addCookie(refreshCookie);
-
-
-        return AuthResponse.builder()
-            .code("LOGIN_SUCCESS")
-            .message("로그인 성공. 토큰 발급 완료")
-            .data(AuthResponse.AuthData.builder()
-                .email(newUser.getEmail())
-                .name(newUser.getName())
-                .isRegistered(false)
-                .build())
-            .build();
     }
 
     // 리프레쉬 토큰 재발급
