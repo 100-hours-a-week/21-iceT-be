@@ -1,4 +1,12 @@
+spring:
+  profiles:
+    active: local  # or prod (배포 시)
+
+# 공통 설정 (application.yml)
+
 logging:
-  discord:
-    webhook-url: https://discord.com/api/webhooks/1372464453630558221/d7FNPuVXrdne7MzIB0ZrfunlcgaldOb9KxmWAjrxrsub7PsAuXHqOHhwMyTPUpTubIf-
-    config: classpath:logback-spring.xml
+  level:
+    root: INFO
+
+
+
