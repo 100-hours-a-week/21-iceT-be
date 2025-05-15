@@ -83,7 +83,7 @@ public class UserService {
      * @param statusMsg
      */
     @Transactional
-    public void updateUserInfo(Long userId, String nickname, String profileImgUrl, String statusMsg) {
+    public void postUserInfo (Long userId, String nickname, String profileImgUrl, String statusMsg) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다"));
 
@@ -95,17 +95,9 @@ public class UserService {
             user.setNickname(userName);
         }
 
-        if (profileImgUrl != null) {
-            user.setProfileImgUrl(profileImgUrl);
-        } else {
-            user.setProfileImgUrl(null);
-        }
+        user.setProfileImgUrl(profileImgUrl);
+        user.setStatusMsg(statusMsg);
 
-        if (statusMsg != null) {
-            user.setStatusMsg(statusMsg);
-        } else {
-            user.setStatusMsg(null);
-        }
         userRepository.save(user);
     }
 

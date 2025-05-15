@@ -46,7 +46,7 @@ public class UserController {
     // 유저 정보 등록
     @Operation(summary = "사용자 정보 등록")
     @PostMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserResponse> updateUserInfo(
+    public ResponseEntity<UserResponse> postUserInfo(
         @RequestPart(value = "nickname", required = false) String nickname,
         @RequestPart(value = "statusMsg", required = false) String statusMsg,
         @RequestPart(value = "profileImg", required = false) MultipartFile profileImg) {
@@ -54,7 +54,7 @@ public class UserController {
         Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String profileImgUrl = (profileImg != null && !profileImg.isEmpty()) ? imageUploader.upload(profileImg) : null;
 
-        userService.updateUserInfo(userId, nickname, profileImgUrl, statusMsg);
+        userService.postUserInfo(userId, nickname, profileImgUrl, statusMsg);
 
         return ResponseEntity.ok(UserResponse.ofSuccess());
     }
