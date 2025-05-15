@@ -41,10 +41,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     break;
                 }
             }
-        }
-
-        if (token != null) {
-            System.out.println(">>>>> access_token 추출됨: " + token);
 
             // 토큰 유효성 검사 실패
             if (!jwtTokenProvider.validateToken(token)) {

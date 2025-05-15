@@ -76,7 +76,7 @@ public class UserService {
     }
 
     /**
-     * 유저 정보 수정(업데이트)
+     * 유저 정보 등록 (초기 정보)
      * @param userId
      * @param nickname
      * @param profileImgUrl
@@ -89,12 +89,7 @@ public class UserService {
 
         String userName = user.getName();
 
-        if (nickname != null) {
-            user.setNickname(nickname);
-        } else {
-            user.setNickname(userName);
-        }
-
+        user.setNickname(nickname != null ? nickname : userName);
         user.setProfileImgUrl(profileImgUrl);
         user.setStatusMsg(statusMsg);
 
