@@ -50,11 +50,11 @@ public class PostService {
     public PostCreateResponseDto createPost(Long userId, PostCreateEditRequestDto requestDto) {
         // 유저 조회
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ForbiddenException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("존재하지 않는 사용자입니다."));
 
         // 해당 문제가 존재하는지 확인
         problemRepository.findByNumber(requestDto.getProblemNumber())
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         "해당 문제 번호를 가진 Problem이 없습니다."));
 
         // Post Entity 생성
@@ -72,7 +72,7 @@ public class PostService {
         List<Category> categories = categoryRepository.findByNameIn(requestDto.getCategory());
 
         if (categories.size() != requestDto.getCategory().size()) {
-            throw new IllegalArgumentException("존재하지 않는 카테고리가 포함되어 있습니다.");
+            throw new ResourceNotFoundException("존재하지 않는 카테고리가 포함되어 있습니다.");
         }
 
         // 중간테이블에 카테고리 매핑
@@ -102,7 +102,7 @@ public class PostService {
     public PostGetDetailResponseDto getPost(Long userId, Long postId) {
         // 게시글 찾기
         Post post = postRepository.findByIdWithUserAndCategories(postId)
-                .orElseThrow(() -> new ForbiddenException("해당 게시글이 존재하지 않습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("해당 게시글이 존재하지 않습니다."));
 
         // 댓글, 좋아요 수
         Integer likeCount = likeRepository.countByPostId(postId);
@@ -155,7 +155,7 @@ public class PostService {
         if (requestDto.getProblemNumber() != null) {
             // 해당 문제가 존재하는지 확인
             problemRepository.findByNumber(requestDto.getProblemNumber())
-                    .orElseThrow(() -> new IllegalArgumentException(
+                    .orElseThrow(() -> new ResourceNotFoundException(
                             "해당 문제 번호를 가진 Problem이 없습니다: " + requestDto.getProblemNumber()));
             post.setProblemNumber(requestDto.getProblemNumber());
 
@@ -177,7 +177,7 @@ public class PostService {
             List<Category> categories = categoryRepository.findByNameIn(requestDto.getCategory());
 
             if (categories.size() != requestDto.getCategory().size()) {
-                throw new IllegalArgumentException("존재하지 않는 카테고리가 포함되어 있습니다.");
+                throw new ResourceNotFoundException("존재하지 않는 카테고리가 포함되어 있습니다.");
             }
 
             // 중간테이블에 카테고리 매핑
