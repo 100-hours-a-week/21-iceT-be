@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SummaryResponseDto {
+public class ChatSummaryResponseDto {
 	private Long sessionId;
 	private String summary;
 }

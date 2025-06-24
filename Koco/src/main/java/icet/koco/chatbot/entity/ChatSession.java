@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 public class ChatSession {
 	@Id
 	@Column(name = "id")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
