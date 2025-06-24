@@ -1,7 +1,11 @@
 package icet.koco.problemSet.repository;
 
+import icet.koco.problemSet.entity.Problem;
+import icet.koco.problemSet.entity.ProblemSet;
 import icet.koco.problemSet.entity.ProblemSetSolution;
 import java.util.List;
+
+import icet.koco.problemSet.entity.Solution;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,5 +22,5 @@ public interface ProblemSetSolutionRespository extends JpaRepository<ProblemSetS
     """)
     List<Long> findSolutionIdsByProblemSetId(@Param("problemSetId") Long problemSetId);
 
-
+	boolean existsByProblemSetAndSolution(ProblemSet problemSet, Solution solution);
 }

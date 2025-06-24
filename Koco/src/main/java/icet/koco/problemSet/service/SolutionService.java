@@ -3,12 +3,13 @@ package icet.koco.problemSet.service;
 import icet.koco.enums.ErrorMessage;
 import icet.koco.global.exception.ResourceNotFoundException;
 import icet.koco.problemSet.dto.AiSolutionRequestDto;
-import icet.koco.problemSet.entity.Problem;
-import icet.koco.problemSet.entity.Solution;
-import icet.koco.problemSet.repository.ProblemRepository;
-import icet.koco.problemSet.repository.SolutionRepository;
+import icet.koco.problemSet.entity.*;
+import icet.koco.problemSet.repository.*;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,7 +18,9 @@ public class SolutionService {
 
     private final SolutionRepository solutionRepository;
     private final ProblemRepository problemRepository;
-
+	private final ProblemSetRepository problemSetRepository;
+	private final ProblemSetProblemRepository problemSetProblemRepository;
+	private final ProblemSetSolutionRespository problemSetSolutionRepository;
     /**
      * AI 서버로부터 해설 받아오기
      * @param aiSolutionRequestDto
@@ -45,5 +48,35 @@ public class SolutionService {
             .build();
 
         solutionRepository.save(solution);
+
+		// 오늘 날짜 문제집 찾거나 생성
+		LocalDate today = LocalDate.now();
+		ProblemSet problemSet = problemSetRepository.findByCreatedAt(today)
+			.orElseGet(() -> {
+				ProblemSet newSet = ProblemSet.builder()
+					.createdAt(today)
+					.build();
+				return problemSetRepository.save(newSet);
+			});
+
+		// 5. problem_set_problem 매핑
+		boolean alreadyMappedProblem = problemSetProblemRepository.existsByProblemSetAndProblem(problemSet, problem);
+		if (!alreadyMappedProblem) {
+			ProblemSetProblem problemSetProblem = ProblemSetProblem.builder()
+				.problemSet(problemSet)
+				.problem(problem)
+				.build();
+			problemSetProblemRepository.save(problemSetProblem);
+		}
+
+		// problem_set_solution 매핑
+		boolean alreadyMappedSolution = problemSetSolutionRepository.existsByProblemSetAndSolution(problemSet, solution);
+		if (!alreadyMappedSolution) {
+			ProblemSetSolution problemSetSolution = ProblemSetSolution.builder()
+				.problemSet(problemSet)
+				.solution(solution)
+				.build();
+			problemSetSolutionRepository.save(problemSetSolution);
+		}
     }
 }

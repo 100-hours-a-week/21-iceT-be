@@ -1,5 +1,6 @@
 package icet.koco.problemSet.repository;
 
+import icet.koco.problemSet.entity.Problem;
 import icet.koco.problemSet.entity.ProblemSet;
 
 import icet.koco.problemSet.entity.ProblemSetProblem;
@@ -31,6 +32,8 @@ public interface ProblemSetProblemRepository extends JpaRepository<ProblemSetPro
 
     @Query("SELECT p.problem.id FROM ProblemSetProblem p WHERE p.problemSet.id = :problemSetId AND p.problem.id IN :problemIds")
     List<Long> findIncludedProblemIds(@Param("problemSetId") Long problemSetId, @Param("problemIds") List<Long> problemIds);
+
+	boolean existsByProblemSetAndProblem(ProblemSet problemSet, Problem problem);
 
 
 }

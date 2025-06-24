@@ -2,7 +2,7 @@
 name: "\U0001F41E Bug (버그 리포트)"
 about: 버그 발생 시 작성하는 이슈 템플릿입니다.
 title: ''
-labels: 버그-심각, 버그-일반
+labels: ''
 assignees: ywoo121
 
 ---

@@ -1,6 +1,8 @@
 package icet.koco.util.test;
 
 
+import icet.koco.problemSet.dto.AiSolutionRequestDto;
+import icet.koco.problemSet.service.SolutionService;
 import icet.koco.user.entity.User;
 import icet.koco.user.repository.UserRepository;
 import icet.koco.util.JwtTokenProvider;
@@ -22,12 +24,14 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/backend/test")
 @Tag(name = "Test", description = "테스트용 API입니다.")
-public class TestAuthController {
+public class TestController {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
+	private final SolutionService solutionService;
 
-    @PostMapping("/token")
+
+	@PostMapping("/token")
     @Operation(summary = "테스트용 access_token을 발급하게 하는 API입니다. ")
     public ResponseEntity<?> createTestToken(@RequestParam Long userId) {
         User user = userRepository.findById(userId).orElse(null);
@@ -48,4 +52,25 @@ public class TestAuthController {
 
         return ResponseEntity.ok(result);
     }
+
+	@PostMapping("/mock-solution")
+	@Operation(summary = "AI 서버에서 받아오는 해설 저장 시 매핑 테스트용 API 입니다.")
+	public ResponseEntity<Void> testSaveSolution() {
+		AiSolutionRequestDto mockDto = AiSolutionRequestDto.builder()
+			.problemNumber(30300L)
+			.problem_check(AiSolutionRequestDto.ProblemCheck.builder()
+				.problem_description("예제3 설명입니다.")
+				.algorithm("예제3 알고리즘")
+				.build())
+			.problem_solving("해결 방법 설명")
+			.solution_code(AiSolutionRequestDto.SolutionCode.builder()
+				.cpp("#include <iostream>")
+				.java("public class Main {}")
+				.python("print('hello')")
+				.build())
+			.build();
+
+		solutionService.saveFromAi(mockDto);
+		return ResponseEntity.ok().build();
+	}
 }
