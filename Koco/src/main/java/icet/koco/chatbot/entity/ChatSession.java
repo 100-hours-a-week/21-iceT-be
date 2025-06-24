@@ -38,6 +38,10 @@ public class ChatSession {
 	@Column(name = "deleted_at")
 	private LocalDateTime deletedAt;
 
+	// 해당 세션이 종료되었는지 (AI 에이전트에서 판단한 값)
+	@Column(name = "is_finished")
+	private Boolean finished;
+
 	public enum Mode {
 		feedback, interview
 	}
