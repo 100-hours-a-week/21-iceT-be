@@ -9,7 +9,6 @@ import icet.koco.problemSet.repository.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -30,24 +29,33 @@ public class SolutionService {
         Problem problem = problemRepository.findByNumber(aiSolutionRequestDto.getProblemNumber())
             .orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.PROBLEM_NOT_FOUND));
 
-        // 문제에 대한 해설이 이미 존재하는지 확인
-        if (solutionRepository.existsByProblem(problem)) {
-            throw new IllegalArgumentException(ErrorMessage.ALREADY_SOLUTION_EXIST.getMessage());
-        }
+		// Solution 저장 or 업데이트
+		Solution solution = solutionRepository.findByProblem(problem)
+				.map(existing -> {
+					existing.setProblem(problem);
+					existing.setDescription(aiSolutionRequestDto.getProblem_check().getProblem_description());
+					existing.setAlgorithm(aiSolutionRequestDto.getProblem_check().getAlgorithm());
+					existing.setProblemSolving(aiSolutionRequestDto.getProblem_solving());
+					existing.setCodeCpp(aiSolutionRequestDto.getSolution_code().getCpp());
+					existing.setCodeJava(aiSolutionRequestDto.getSolution_code().getJava());
+					existing.setCodePy(aiSolutionRequestDto.getSolution_code().getPython());
+					existing.setUpdatedAt(LocalDateTime.now());
+					return existing;
+				})
+				.orElseGet(() -> Solution.builder()
+					.problem(problem)
+					.description(aiSolutionRequestDto.getProblem_check().getProblem_description())
+					.algorithm(aiSolutionRequestDto.getProblem_check().getAlgorithm())
+					.problemSolving(aiSolutionRequestDto.getProblem_solving())
+					.codePy(aiSolutionRequestDto.getSolution_code().getPython())
+					.codeCpp(aiSolutionRequestDto.getSolution_code().getCpp())
+					.codeJava(aiSolutionRequestDto.getSolution_code().getJava())
+					.createdAt(LocalDateTime.now())
+					.build()
+				);
 
-        // Solution 저장
-        Solution solution = Solution.builder()
-            .problem(problem)  // 연관관계 설정
-            .description(aiSolutionRequestDto.getProblem_check().getProblem_description())
-            .algorithm(aiSolutionRequestDto.getProblem_check().getAlgorithm())
-            .problemSolving(aiSolutionRequestDto.getProblem_solving())
-            .codeCpp(aiSolutionRequestDto.getSolution_code().getCpp())
-            .codeJava(aiSolutionRequestDto.getSolution_code().getJava())
-            .codePy(aiSolutionRequestDto.getSolution_code().getPython())
-            .createdAt(LocalDateTime.now())
-            .build();
+		solutionRepository.save(solution);
 
-        solutionRepository.save(solution);
 
 		// 오늘 날짜 문제집 찾거나 생성
 		LocalDate today = LocalDate.now();
@@ -59,7 +67,7 @@ public class SolutionService {
 				return problemSetRepository.save(newSet);
 			});
 
-		// 5. problem_set_problem 매핑
+		// problem_set_problem 매핑
 		boolean alreadyMappedProblem = problemSetProblemRepository.existsByProblemSetAndProblem(problemSet, problem);
 		if (!alreadyMappedProblem) {
 			ProblemSetProblem problemSetProblem = ProblemSetProblem.builder()

@@ -1,6 +1,5 @@
 package icet.koco.problemSet.repository;
 
-import icet.koco.problemSet.entity.Problem;
 import icet.koco.problemSet.entity.ProblemSet;
 import icet.koco.problemSet.entity.ProblemSetSolution;
 import java.util.List;

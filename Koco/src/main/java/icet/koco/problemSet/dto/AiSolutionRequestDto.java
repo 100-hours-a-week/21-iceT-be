@@ -17,7 +17,6 @@ public class AiSolutionRequestDto {
         private String problem_description;
         private String algorithm;
     }
-
 	@Builder
     @Getter
     public static class SolutionCode {

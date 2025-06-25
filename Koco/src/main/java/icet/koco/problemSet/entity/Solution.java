@@ -54,6 +54,10 @@ public class Solution {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+	// 업데이트 일자
+	@Column(name = "updated_at")
+	private LocalDateTime updatedAt;
+
     @OneToMany(mappedBy = "solution")
     private List<ProblemSetSolution> problemSetSolutions = new ArrayList<>();
 }
