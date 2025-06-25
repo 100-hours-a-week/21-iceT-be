@@ -24,6 +24,7 @@ public class ChatSession {
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
+	// 챗봇 모드
 	@Column(name = "mode")
 	private Mode mode;
 
