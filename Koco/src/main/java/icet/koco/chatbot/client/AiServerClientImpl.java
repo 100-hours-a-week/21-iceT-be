@@ -5,7 +5,6 @@ import icet.koco.chatbot.dto.feedback.FeedbackStartRequestDto;
 import icet.koco.chatbot.dto.summary.ChatSummaryRequestDto;
 import icet.koco.chatbot.entity.ChatSummary;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;

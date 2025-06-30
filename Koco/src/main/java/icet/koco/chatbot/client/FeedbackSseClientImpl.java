@@ -1,6 +1,8 @@
 package icet.koco.chatbot.client;
 
+import icet.koco.chatbot.dto.feedback.FeedbackAnswerRequestDto;
 import icet.koco.chatbot.dto.feedback.FeedbackStartRequestDto;
+import icet.koco.chatbot.emitter.ChatEmitterRepository;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -11,6 +13,8 @@ import java.io.IOException;
 
 @Component
 public class FeedbackSseClientImpl implements FeedbackSseClient {
+
+	private ChatEmitterRepository chatEmitterRepository;
 
 	private final WebClient webClient = WebClient.builder()
 		.baseUrl("http://ai-server-host")
@@ -40,4 +44,34 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 
 		return emitter;
 	}
+
+	@Override
+	public SseEmitter streamAnswer(FeedbackAnswerRequestDto requestDto) {
+		SseEmitter emitter = chatEmitterRepository.findBySessionId(requestDto.getSessionId());
+		if (emitter == null) {
+			throw new IllegalStateException("SSE 연결이 존재하지 않습니다.");
+		}
+
+		webClient.post()
+			.uri("/api/v1/feedback/answer")
+			.bodyValue(requestDto)
+			.accept(MediaType.TEXT_EVENT_STREAM)
+			.retrieve()
+			.bodyToFlux(String.class)
+			.doOnNext(data -> {
+				try {
+					emitter.send(SseEmitter.event().name("message").data(data));
+				} catch (IOException e) {
+					emitter.completeWithError(e);
+				}
+			})
+			.doOnError(emitter::completeWithError)
+			.doOnComplete(() -> {
+				// 총평 판단 등의 처리 가능
+			})
+			.subscribe();
+
+		return emitter;
+	}
+
 }

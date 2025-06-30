@@ -27,6 +27,10 @@ public class ChatSessionService {
 	private final UserRepository userRepository;
 
 	public SseEmitter startFeedbackSession(ChatSessionStartRequestDto dto, Long userId) {
+		if (!dto.getMode().equals("feedback")) {
+			throw new IllegalArgumentException("Only 'feedback mode is supported");
+		}
+
 		// 사용자 찾기
 		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
 			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
