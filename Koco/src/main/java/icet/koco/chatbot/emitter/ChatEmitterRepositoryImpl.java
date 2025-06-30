@@ -18,22 +18,12 @@ public class ChatEmitterRepositoryImpl implements ChatEmitterRepository {
 	}
 
 	@Override
-	public SseEmitter findBySessionId(Long sessionId) {
+	public SseEmitter get(Long sessionId) {
 		return emitters.get(sessionId);
 	}
 
 	@Override
-	public void deleteBySessionId(Long sessionId) {
+	public void delete(Long sessionId) {
 		emitters.remove(sessionId);
-	}
-
-	@Override
-	public Map<Long, SseEmitter> findAllEmitters() {
-		return emitters;
-	}
-
-	@Override
-	public void clear() {
-		emitters.clear();
 	}
 }
