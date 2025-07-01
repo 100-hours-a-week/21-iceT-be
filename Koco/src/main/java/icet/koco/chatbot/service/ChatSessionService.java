@@ -12,11 +12,13 @@ import icet.koco.problemSet.repository.ProblemRepository;
 import icet.koco.user.entity.User;
 import icet.koco.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatSessionService {
@@ -27,13 +29,10 @@ public class ChatSessionService {
 	private final UserRepository userRepository;
 
 	public SseEmitter startFeedbackSession(ChatSessionStartRequestDto dto, Long userId) {
-		if (!dto.getMode().equals("feedback")) {
-			throw new IllegalArgumentException("Only 'feedback mode is supported");
-		}
-
 		// 사용자 찾기
 		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
 			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
+		log.info("User: " + user.getNickname());
 
 		// 문제 찾기
 		Problem problem = problemRepository.findByNumber(dto.getProblemNumber())

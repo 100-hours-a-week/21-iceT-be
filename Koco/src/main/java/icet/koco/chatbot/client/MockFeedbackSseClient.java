@@ -17,7 +17,7 @@ public class MockFeedbackSseClient implements FeedbackSseClient {
 
 	@Override
 	public SseEmitter streamStartFeedback(FeedbackStartRequestDto requestDto) {
-		System.out.println("✅ MOCK 세션 생성 호출됨 - sessionId: " + requestDto.getSessionId());
+		System.out.println("✅ MOCK 세션 생성 - sessionId: " + requestDto.getSessionId());
 		System.out.println("📌 코드 내용:\n" + requestDto.getCode());
 
 		SseEmitter emitter = new SseEmitter(60_000L); // 60초 타임아웃

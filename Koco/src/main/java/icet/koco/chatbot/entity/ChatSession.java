@@ -4,6 +4,9 @@ package icet.koco.chatbot.entity;
 import icet.koco.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 
 import java.time.LocalDateTime;
 
@@ -45,6 +48,17 @@ public class ChatSession {
 	private Boolean finished;
 
 	public enum Mode {
-		feedback, interview
+		feedback, interview;
+
+		@JsonCreator
+		public static Mode from(String value) {
+			if (value == null) return null;
+			return Mode.valueOf(value.toLowerCase());
+		}
+
+		@JsonValue
+		public String toValue() {
+			return this.name();
+		}
 	}
 }

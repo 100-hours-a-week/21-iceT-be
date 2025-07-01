@@ -20,7 +20,14 @@ public class ChatSessionController {
 
 	@PostMapping(value = "/session", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public SseEmitter startChatSession(@RequestBody ChatSessionStartRequestDto requestDto) {
+		System.out.println("ChatSessionController.startChatSession");
 		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		return chatSessionService.startFeedbackSession(requestDto, userId);
+
+		String mode = (requestDto.getMode()).toString();
+
+		if (mode.equals("feedback")) {
+			return chatSessionService.startFeedbackSession(requestDto, userId);
+		}
+		return null;
 	}
 }

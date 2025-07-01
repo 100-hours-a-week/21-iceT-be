@@ -24,18 +24,21 @@ public class FeedbackController {
 
 	@PostMapping(value = "/ai/v2/feedback/start", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public SseEmitter startFeedback(@RequestBody FeedbackStartRequestDto requestDto) {
+		System.out.println("FeedbackController startFeedback");
 		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		return feedbackService.handleStartFeedback(requestDto, userId);
 	}
 
 	@PostMapping(value = "/v1/feedback/answer", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public SseEmitter feedbackAnswer(@RequestBody FeedbackAnswerRequestDto requestDto) {
+		System.out.println("FeedbackController feedbackAnswer");
 		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		return feedbackService.handleFeedbackAnswer(requestDto, userId);
 	}
 
 	@PostMapping("/ai/v2/summary")
 	public ResponseEntity<ChatSummary> summarize(@RequestBody ChatSummaryRequestDto dto) {
+		System.out.println("FeedbackController summarize");
 		ChatSummary summary = feedbackService.requestSummary(dto);
 		return ResponseEntity.ok(summary);
 	}
