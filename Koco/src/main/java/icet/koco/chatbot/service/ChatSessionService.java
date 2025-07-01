@@ -34,6 +34,8 @@ public class ChatSessionService {
 			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
 		log.info("User: " + user.getNickname());
 
+		log.info("Mode: " + dto.getMode());
+
 		// 문제 찾기
 		Problem problem = problemRepository.findByNumber(dto.getProblemNumber())
 			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.PROBLEM_NOT_FOUND));

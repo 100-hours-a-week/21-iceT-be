@@ -17,11 +17,10 @@ public class MockFeedbackSseClient implements FeedbackSseClient {
 
 	@Override
 	public SseEmitter streamStartFeedback(FeedbackStartRequestDto requestDto) {
-		System.out.println("✅ MOCK 세션 생성 - sessionId: " + requestDto.getSessionId());
-		System.out.println("📌 코드 내용:\n" + requestDto.getCode());
+		System.out.println("MOCK 세션 생성 - sessionId: " + requestDto.getSessionId());
 
-		SseEmitter emitter = new SseEmitter(60_000L); // 60초 타임아웃
-		chatEmitterRepository.save(requestDto.getSessionId(), emitter); // 💡 저장
+		SseEmitter emitter = new SseEmitter(60_000L);
+		chatEmitterRepository.save(requestDto.getSessionId(), emitter);
 
 		new Thread(() -> {
 			try {
@@ -32,7 +31,7 @@ public class MockFeedbackSseClient implements FeedbackSseClient {
 				emitter.send(SseEmitter.event().name("message").data("✅ MOCK: 코드 분석 완료!"));
 				emitter.complete();
 			} catch (Exception e) {
-				System.out.println("❗ SseEmitter 오류 발생: " + e.getMessage());
+				System.out.println("SseEmitter 오류 발생: " + e.getMessage());
 				emitter.completeWithError(e);
 			}
 		}).start();
@@ -46,7 +45,7 @@ public class MockFeedbackSseClient implements FeedbackSseClient {
 		SseEmitter emitter = chatEmitterRepository.findBySessionId(requestDto.getSessionId());
 
 		if (emitter == null) {
-			throw new IllegalStateException("❗ emitter not found for sessionId: " + requestDto.getSessionId());
+			throw new IllegalStateException("emitter not found for sessionId: " + requestDto.getSessionId());
 		}
 
 		new Thread(() -> {

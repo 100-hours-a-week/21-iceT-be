@@ -49,16 +49,5 @@ public class ChatSession {
 
 	public enum Mode {
 		feedback, interview;
-
-		@JsonCreator
-		public static Mode from(String value) {
-			if (value == null) return null;
-			return Mode.valueOf(value.toLowerCase());
-		}
-
-		@JsonValue
-		public String toValue() {
-			return this.name();
-		}
 	}
 }
