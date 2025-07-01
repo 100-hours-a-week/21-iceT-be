@@ -3,6 +3,14 @@ package icet.koco.chatbot.client;
 import icet.koco.chatbot.dto.feedback.FeedbackAnswerRequestDto;
 import icet.koco.chatbot.dto.feedback.FeedbackStartRequestDto;
 import icet.koco.chatbot.emitter.ChatEmitterRepository;
+import icet.koco.chatbot.entity.ChatRecord.Role;
+import icet.koco.chatbot.entity.ChatSession;
+import icet.koco.chatbot.repository.ChatSessionRepository;
+import icet.koco.chatbot.service.ChatRecordService;
+import icet.koco.enums.ErrorMessage;
+import icet.koco.global.exception.ResourceNotFoundException;
+import java.time.Duration;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -12,34 +20,54 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 
 @Component
+@RequiredArgsConstructor
 public class FeedbackSseClientImpl implements FeedbackSseClient {
 
-	private ChatEmitterRepository chatEmitterRepository;
+	private final ChatEmitterRepository chatEmitterRepository;
+	private final ChatSessionRepository chatSessionRepository;
+	private final ChatRecordService chatRecordService;
 
 	private final WebClient webClient = WebClient.builder()
-		.baseUrl("http://ai-server-host")
+		.baseUrl("http://ai-server-host") // TODO: 실제 호스트로 교체
 		.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
 		.build();
 
 	@Override
 	public SseEmitter streamStartFeedback(FeedbackStartRequestDto requestDto) {
-		SseEmitter emitter = new SseEmitter(0L);
+		SseEmitter emitter = new SseEmitter(0L); // 무한 SSE
+		chatEmitterRepository.save(requestDto.getSessionId(), emitter);
+
+		StringBuilder fullResponse = new StringBuilder();
 
 		webClient.post()
-			.uri("/ai/feedback/start")
+			.uri("/api/ai/v2/feedback/start")
 			.bodyValue(requestDto)
 			.accept(MediaType.TEXT_EVENT_STREAM)
 			.retrieve()
 			.bodyToFlux(String.class)
+			.timeout(Duration.ofSeconds(60))
 			.doOnNext(data -> {
-				try {
-					emitter.send(SseEmitter.event().name("message").data(data));
-				} catch (IOException e) {
-					emitter.completeWithError(e);
+				if (!data.startsWith("[ERROR]")) {
+					try {
+						emitter.send(SseEmitter.event().name("message").data(data));
+						fullResponse.append(data).append("\n");
+					} catch (IOException e) {
+						emitter.completeWithError(e);
+					}
 				}
 			})
-			.doOnError(emitter::completeWithError)
-			.doOnComplete(emitter::complete)
+			.doOnError(e -> {
+				emitter.completeWithError(e);
+			})
+			.doOnComplete(() -> {
+				emitter.complete();
+
+				// ChatRecord 저장
+				ChatSession chatSession = chatSessionRepository.findById(requestDto.getSessionId())
+					.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
+
+				chatRecordService.save(chatSession, Role.assistant, fullResponse.toString().trim());
+			})
 			.subscribe();
 
 		return emitter;

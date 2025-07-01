@@ -44,9 +44,6 @@ public class FeedbackService {
 
 		aiClient.streamStartFeedback(dto, emitter);
 
-		// chat_record 저장
-		chatRecordRepository.saveAll(ChatRecord.fromStartDto(dto, chatSession));
-
 		return emitter;
 	}
 

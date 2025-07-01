@@ -17,4 +17,8 @@ public interface ChatRecordRepository extends JpaRepository<ChatRecord, Long> {
 	default List<ChatRecord> findLast10BySessionId(Long sessionId) {
 		return findLast10BySessionId(sessionId, PageRequest.of(0, 10));
 	}
+
+	// turn을 자동으로 다음값으로 설정하기 위해서
+	@Query("SELECT COALESCE(MAX(r.turn), 0) FROM ChatRecord r WHERE r.chatSession.id = :sessionId")
+	int findMaxTurnBySessionId(@Param("sessionId") Long sessionId);
 }

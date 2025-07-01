@@ -1,6 +1,7 @@
 package icet.koco.chatbot.entity;
 
 
+import icet.koco.chatbot.dto.ChatSessionStartRequestDto;
 import icet.koco.chatbot.dto.feedback.FeedbackAnswerRequestDto;
 import icet.koco.chatbot.dto.feedback.FeedbackStartRequestDto;
 import jakarta.persistence.*;
@@ -44,15 +45,26 @@ public class ChatRecord {
 		user, assistant
 	}
 
-	public static List<ChatRecord> fromStartDto(FeedbackStartRequestDto dto, ChatSession session) {
+//	public static List<ChatRecord> fromStartDto(FeedbackStartRequestDto dto, ChatSession session) {
+//		return List.of(ChatRecord.builder()
+//			.chatSession(session)
+//			.turn(1)
+//			.role(Role.user)
+//			.content(dto.getCode())
+//			.createdAt(LocalDateTime.now())
+//			.build());
+//	}
+
+	public static List<ChatRecord> fromStartDto(ChatSessionStartRequestDto dto, ChatSession session) {
 		return List.of(ChatRecord.builder()
 			.chatSession(session)
 			.turn(1)
 			.role(Role.user)
-			.content(dto.getCode())
+			.content(dto.getUserCode())
 			.createdAt(LocalDateTime.now())
 			.build());
 	}
+
 
 	public static List<ChatRecord> fromAnswerDto(FeedbackAnswerRequestDto dto, ChatSession session) {
 		List<ChatRecord> records = new ArrayList<>();
