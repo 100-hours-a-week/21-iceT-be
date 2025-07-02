@@ -17,7 +17,7 @@ import java.util.List;
 public class SummaryClientImpl implements SummaryClient {
 
 	private final WebClient webClient = WebClient.builder()
-		.baseUrl("http://ai-server")	// TODO: AI서버로 바꾸기
+		.baseUrl("${AI_BASE_URL}")	// TODO: 실제 AI 서버 주소로 바꿔야 함
 		.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
 		.build();
 
@@ -32,7 +32,13 @@ public class SummaryClientImpl implements SummaryClient {
 				.bodyToMono(ChatSummaryResponseDto[].class)
 				.block();
 
-			return (response != null && response.length > 0) ? response[0].getSummary() : "";
+			if (response != null && response.length > 0) {
+				log.info("요약 응답 수신 완료 - sessionId: {}", response[0].getSessionId());
+				return response[0].getSummary();
+			} else {
+				log.warn("요약 응답이 비어 있음");
+				return "";
+			}
 		} catch (Exception e) {
 			log.error("요약 요청 중 오류 발생", e);
 			return "";

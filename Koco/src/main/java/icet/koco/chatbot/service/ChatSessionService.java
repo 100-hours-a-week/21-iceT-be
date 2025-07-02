@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -84,6 +85,10 @@ public class ChatSessionService {
 	}
 
 	public SseEmitter processUserMessage(Long sessionId, Long userId, String content) {
+		// 사용자 있는지 확인
+		userRepository.findByIdAndDeletedAtIsNull(userId)
+				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
+
 		// 채팅 세션 찾기
 		ChatSession session = chatSessionRepository.findById(sessionId)
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
@@ -96,16 +101,28 @@ public class ChatSessionService {
 
 		String summary = summaryClient.requestSummary(summaryDto);
 
-		// 채팅 요약 내용 저장
-		ChatSummary chatSummary = ChatSummary.builder()
-				.chatSession(session)
-				.summary(summary)
-				.createdAt(LocalDateTime.now())
-				.build();
-
-		chatSummaryRepository.save(chatSummary);
+		// 채팅 세션에 대한 요약이 없으면 새로 저장
+		saveOrUpdateSummary(session, summary);
 
 		FeedbackAnswerRequestDto answerRequest = FeedbackAnswerRequestDto.from(sessionId, summary, latestMessages);
-		return feedbackSseClient.streamAnswer(answerRequest);
+		return feedbackSseClient.streamFollowupFeedback(answerRequest);
 	}
+
+	private void saveOrUpdateSummary(ChatSession session, String summary) {
+		Optional<ChatSummary> optional = chatSummaryRepository.findByChatSession(session);
+		if (optional.isPresent()) {
+			ChatSummary existing = optional.get();
+			existing.setSummary(summary);
+			existing.setCreatedAt(LocalDateTime.now());
+			chatSummaryRepository.save(existing);
+		} else {
+			ChatSummary newOne = ChatSummary.builder()
+					.chatSession(session)
+					.summary(summary)
+					.createdAt(LocalDateTime.now())
+					.build();
+			chatSummaryRepository.save(newOne);
+		}
+	}
+
 }

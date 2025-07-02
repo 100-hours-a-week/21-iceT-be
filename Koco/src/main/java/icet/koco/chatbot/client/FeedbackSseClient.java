@@ -6,5 +6,5 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public interface FeedbackSseClient {
 	SseEmitter startFeedbackSession(FeedbackStartRequestDto requestDto);
-	SseEmitter streamAnswer(FeedbackAnswerRequestDto requestDto);
+	SseEmitter streamFollowupFeedback(FeedbackAnswerRequestDto requestDto);
 }

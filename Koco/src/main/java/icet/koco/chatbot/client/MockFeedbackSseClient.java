@@ -10,6 +10,7 @@ import icet.koco.chatbot.repository.ChatSessionRepository;
 import icet.koco.chatbot.service.ChatRecordService;
 import icet.koco.enums.ErrorMessage;
 import icet.koco.global.exception.ResourceNotFoundException;
+import icet.koco.util.CookieUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
@@ -22,14 +23,15 @@ public class MockFeedbackSseClient implements FeedbackSseClient {
 
 	private final ChatEmitterRepository chatEmitterRepository;
 	private final ChatSessionRepository chatSessionRepository;
-	private final ChatRecordRepository chatRecordRepository;
 	private final ChatRecordService chatRecordService;
+	private final CookieUtil cookieUtil;
 
 	@Override
-	public SseEmitter streamStartFeedback(FeedbackStartRequestDto requestDto) {
+	public SseEmitter startFeedbackSession(FeedbackStartRequestDto requestDto) {
 		System.out.println("MOCK 세션 생성 - sessionId: " + requestDto.getSessionId());
 
-		SseEmitter emitter = new SseEmitter(60_000L);
+		// emitter 연결 무제한
+		SseEmitter emitter = new SseEmitter(0L);
 		chatEmitterRepository.save(requestDto.getSessionId(), emitter);
 
 		new Thread(() -> {
@@ -57,9 +59,6 @@ public class MockFeedbackSseClient implements FeedbackSseClient {
 				ChatSession chatSession = chatSessionRepository.findById(requestDto.getSessionId())
 					.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
 
-				// turn 자동 증가
-				int nextTurn = chatRecordRepository.findMaxTurnBySessionId(requestDto.getSessionId());
-
 				// chatRecord 저장
 				chatRecordService.save(chatSession, Role.assistant, fullResponse.toString());
 
@@ -73,24 +72,39 @@ public class MockFeedbackSseClient implements FeedbackSseClient {
 	}
 
 	@Override
-	public SseEmitter streamAnswer(FeedbackAnswerRequestDto requestDto) {
+	public SseEmitter streamFollowupFeedback(FeedbackAnswerRequestDto requestDto) {
 		System.out.println("MockFeedbackSseClient: streamAnswer(후속 질문 AI)");
-		SseEmitter emitter = chatEmitterRepository.findBySessionId(requestDto.getSessionId());
 
-		if (emitter == null) {
-			throw new IllegalStateException("emitter not found for sessionId: " + requestDto.getSessionId());
-		}
+		SseEmitter emitter = new SseEmitter(0L); // 무제한
+		chatEmitterRepository.save(requestDto.getSessionId(), emitter);
 
 		new Thread(() -> {
+			StringBuilder fullResponse = new StringBuilder();
 			try {
-				emitter.send(SseEmitter.event().name("message").data("💬 MOCK: 후속 질문 처리 중..."));
+				System.out.println("stream 스레드 생성 완료");
+
+				String msg1 = "💬 MOCK: 후속 질문 처리 중...";
+				emitter.send(SseEmitter.event().name("message").data(msg1));
+				fullResponse.append(msg1);
 				Thread.sleep(500);
-				emitter.send(SseEmitter.event().name("message").data("✅ MOCK: 답변 완료"));
+
+				String msg2 = "✅ MOCK: 답변 완료";
+				emitter.send(SseEmitter.event().name("message").data(msg2));
+				fullResponse.append(msg2);
 				emitter.complete();
+
+				// chatSession 조회
+				ChatSession chatSession = chatSessionRepository.findById(requestDto.getSessionId())
+						.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
+
+				// chatRecord 저장
+				chatRecordService.save(chatSession, Role.assistant, fullResponse.toString());
 			} catch (Exception e) {
+				System.out.println("[streamAnswer] SseEmitter 오류 발생: " + e.getMessage());
 				emitter.completeWithError(e);
 			}
 		}).start();
+
 
 		return emitter;
 	}
