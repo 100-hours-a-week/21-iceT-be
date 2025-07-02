@@ -1,6 +1,7 @@
 package icet.koco.chatbot.service;
 
 import icet.koco.chatbot.client.FeedbackSseClient;
+import icet.koco.chatbot.client.InterviewSseClient;
 import icet.koco.chatbot.client.SummaryClient;
 import icet.koco.chatbot.dto.ChatSessionStartRequestDto;
 import icet.koco.chatbot.dto.ai.ChatbotFollowupRequestDto;
@@ -31,14 +32,17 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ChatSessionService {
 
+	private final ChatRecordService chatRecordService;
+
 	private final ChatSessionRepository chatSessionRepository;
-	private final FeedbackSseClient feedbackSseClient;
-	private final SummaryClient summaryClient;
 	private final ProblemRepository problemRepository;
 	private final UserRepository userRepository;
 	private final ChatRecordRepository chatRecordRepository;
-	private final ChatRecordService chatRecordService;
 	private final ChatSummaryRepository chatSummaryRepository;
+
+	private final FeedbackSseClient feedbackSseClient;
+	private final InterviewSseClient interviewSseClient;
+	private final SummaryClient summaryClient;
 
 	public SseEmitter startFeedbackSession(ChatSessionStartRequestDto dto, Long userId) {
 		// 사용자 찾기
@@ -121,6 +125,49 @@ public class ChatSessionService {
 		List<ChatRecord> latestMessages = chatRecordRepository.findLast10BySessionId(sessionId);
 		ChatbotFollowupRequestDto answerRequest = ChatbotFollowupRequestDto.from(sessionId, summary, latestMessages);
 		return feedbackSseClient.streamFollowupFeedback(answerRequest);
+	}
+
+	public SseEmitter startInterviewSession(ChatSessionStartRequestDto dto, Long userId) {
+		// 사용자 찾기
+		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
+
+		log.info("User: " + user.getNickname());
+		log.info("Mode: " + dto.getMode());
+
+		// 문제 찾기
+		Problem problem = problemRepository.findByNumber(dto.getProblemNumber())
+			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.PROBLEM_NOT_FOUND));
+
+		ChatSession session = chatSessionRepository.save(
+			ChatSession.builder()
+				.user(user)
+				.mode(dto.getMode())
+				.problemNumber(problem.getNumber())
+				.title(problem.getTitle())
+				.createdAt(LocalDateTime.now())
+				.build()
+		);
+
+		// 사용자 메세지 저장
+		List<ChatRecord> initRecord = ChatRecord.fromStartDto(dto, session);
+		chatRecordRepository.saveAll(initRecord);
+
+		// AI 피드백 요청
+		ChatbotStartRequestDto request = ChatbotStartRequestDto.builder()
+			.sessionId(session.getId())
+			.problemNumber(dto.getProblemNumber())
+			.title(problem.getTitle())
+			.description(problem.getDescription())
+			.inputDescription(problem.getInputDescription())
+			.outputDescription(problem.getOutputDescription())
+			.inputExample(problem.getInputExample())
+			.outputExample(problem.getOutputExample())
+			.codeLanguage(dto.getLanguage())
+			.code(dto.getUserCode())
+			.build();
+
+		return interviewSseClient.startInterviewSession(request);
 	}
 
 	private void saveOrUpdateSummary(ChatSession session, String summary) {

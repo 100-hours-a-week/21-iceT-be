@@ -27,6 +27,8 @@ public class ChatSessionController {
 
 		if (mode.equals("feedback")) {
 			return chatSessionService.startFeedbackSession(requestDto, userId);
+		} else if (mode.equals("interview")) {
+			return chatSessionService.startInterviewSession(requestDto, userId);
 		}
 		return null;
 	}
