@@ -2,8 +2,12 @@ package icet.koco.chatbot.client;
 
 import icet.koco.chatbot.dto.summary.ChatSummaryRequestDto;
 import icet.koco.chatbot.dto.summary.ChatSummaryResponseDto;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.minidev.json.JSONUtil;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -12,14 +16,30 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.List;
 
 @Slf4j
+@Primary
 @Component
 @RequiredArgsConstructor
 public class SummaryClientImpl implements SummaryClient {
 
-	private final WebClient webClient = WebClient.builder()
-		.baseUrl("${AI_BASE_URL}")	// TODO: 실제 AI 서버 주소로 바꿔야 함
-		.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-		.build();
+	@Value("${AI_BASE_URL}")
+	private String baseUrl;
+
+	private WebClient webClient;
+
+//	private final WebClient webClient = WebClient.builder()
+//		.baseUrl(baseUrl)	// TODO: 실제 AI 서버 주소로 바꿔야 함
+//		.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+//		.build();
+
+	@PostConstruct
+	public void initWebClient() {
+		log.info(">>> AI_BASE_URL 로드됨: {}", baseUrl);
+
+		this.webClient = WebClient.builder()
+			.baseUrl(baseUrl)
+			.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+			.build();
+	}
 
 	@Override
 	public String requestSummary(ChatSummaryRequestDto requestDto) {

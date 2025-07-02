@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Component
-@Primary
+//@Primary
 @RequiredArgsConstructor
 public class MockFeedbackSseClient implements FeedbackSseClient {
 

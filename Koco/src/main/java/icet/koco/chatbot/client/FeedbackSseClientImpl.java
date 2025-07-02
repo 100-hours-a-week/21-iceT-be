@@ -1,5 +1,6 @@
 package icet.koco.chatbot.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import icet.koco.chatbot.dto.feedback.FeedbackAnswerRequestDto;
 import icet.koco.chatbot.dto.feedback.FeedbackStartRequestDto;
 import icet.koco.chatbot.emitter.ChatEmitterRepository;
@@ -11,31 +12,60 @@ import icet.koco.enums.ErrorMessage;
 import icet.koco.global.exception.ResourceNotFoundException;
 import java.io.IOException;
 import java.time.Duration;
+
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 
 @Component
+@Primary
+@Slf4j
 @RequiredArgsConstructor
 public class FeedbackSseClientImpl implements FeedbackSseClient {
+
+	@Value("${AI_BASE_URL}")
+	private String baseUrl;
+
 
 	private final ChatEmitterRepository chatEmitterRepository;
 	private final ChatSessionRepository chatSessionRepository;
 	private final ChatRecordService chatRecordService;
 
-	private final WebClient webClient = WebClient.builder()
-		.baseUrl("${AI_BASE_URL}")	// TODO: 실제 AI 서버 주소로 바꿔야 함
-		.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-		.build();
+	private WebClient webClient;
+	private final ObjectMapper objectMapper = new ObjectMapper();
+
+	@PostConstruct
+	public void initWebClient() {
+		log.info(">>> AI_BASE_URL 로드됨: {}", baseUrl);
+
+		this.webClient = WebClient.builder()
+			.baseUrl(baseUrl)
+			.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+			.build();
+	}
 
 	@Override
 	public SseEmitter startFeedbackSession(FeedbackStartRequestDto requestDto) {
 		SseEmitter emitter = new SseEmitter(0L); // 무제한 SSE
 		chatEmitterRepository.save(requestDto.getSessionId(), emitter);
+
+		// 요청 내용 로깅
+		try {
+			log.info(">>> [AI 요청] /api/ai/v2/feedback/start 전송 내용:\n{}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDto));
+		} catch (Exception e) {
+			log.warn("requestDto 직렬화 실패", e);
+		}
+
 
 		StringBuilder fullResponse = new StringBuilder();
 
@@ -44,39 +74,42 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 			.bodyValue(requestDto)
 			.accept(MediaType.TEXT_EVENT_STREAM)
 			.retrieve()
-			.bodyToFlux(String.class)
+			.bodyToFlux(new ParameterizedTypeReference<ServerSentEvent<String>>() {})
 			.timeout(Duration.ofSeconds(60))
 			.onErrorResume(e -> {
 				emitter.completeWithError(e);
 				return Flux.empty();
 			})
-			.doOnNext(data -> {
-				try {
-					if (data.startsWith("data: ")) {
-						String content = data.substring(6); // "data: " 제거
+			.doOnNext(event -> {
+				String raw = (String) event.data(); // e.g. "data: Hello"
+				log.info("SSE 수신 원본: {}", raw);
 
-						// 에러 메시지 처리
-						if (content.startsWith("[ERROR]")) {
-							emitter.send(SseEmitter.event().name("error").data(content));
-							emitter.completeWithError(new RuntimeException(content));
-							return;
-						}
+				String data = raw;
+				if (data != null && data.startsWith("data: ")) {
+					data = data.substring(6); // "data: " 제거
+				}
 
-						emitter.send(SseEmitter.event().name("message").data(content));
-						fullResponse.append(content).append("\n");
+				if (data != null && data.startsWith("[ERROR]")) {
+					try {
+						emitter.send(SseEmitter.event().name("error").data(data));
+					} catch (IOException e) {
+						emitter.completeWithError(e);
+						return;
 					}
-				} catch (IOException e) {
-					emitter.completeWithError(e);
+					emitter.completeWithError(new RuntimeException(data));
+				} else {
+					try {
+						emitter.send(SseEmitter.event().name("message").data(data));
+						fullResponse.append(data).append("\n"); // 정제된 내용 저장
+					} catch (IOException e) {
+						emitter.completeWithError(e);
+					}
 				}
 			})
 			.doOnComplete(() -> {
 				emitter.complete();
-
-				// ChatSession 조회
 				ChatSession chatSession = chatSessionRepository.findById(requestDto.getSessionId())
 					.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
-
-				// ChatRecord 저장
 				chatRecordService.save(chatSession, Role.assistant, fullResponse.toString().trim());
 			})
 			.subscribe();
@@ -98,24 +131,29 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 			.bodyValue(requestDto)
 			.accept(MediaType.TEXT_EVENT_STREAM)
 			.retrieve()
-			.bodyToFlux(String.class)
+			.bodyToFlux(new ParameterizedTypeReference<ServerSentEvent<String>>() {})
+			.filter(event -> event.data() != null)
 			.timeout(Duration.ofSeconds(60))
 			.onErrorResume(e -> {
 				emitter.completeWithError(e);
 				return Flux.empty();
 			})
-			.doOnNext(data -> {
+			.doOnNext(event -> {
+				String data = event.data();
+				log.info("AI 응답 수신: {}", data);
+
+				if (data == null) {
+					log.info("data is null");
+					return;
+				}
+
+				String content = data.startsWith("data: ") ? data.substring(6) : data;
+
 				try {
-					if (data.startsWith("data: ")) {
-						String content = data.substring(6); // "data: " 제거
-
-						// 에러 메시지 처리
-						if (content.startsWith("[ERROR]")) {
-							emitter.send(SseEmitter.event().name("error").data(content));
-							emitter.completeWithError(new RuntimeException(content));
-							return;
-						}
-
+					if (content.startsWith("[ERROR]")) {
+						emitter.send(SseEmitter.event().name("error").data(content));
+						emitter.completeWithError(new RuntimeException(content));
+					} else {
 						emitter.send(SseEmitter.event().name("message").data(content));
 						fullResponse.append(content).append("\n");
 					}
@@ -137,4 +175,5 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 
 		return emitter;
 	}
+
 }
