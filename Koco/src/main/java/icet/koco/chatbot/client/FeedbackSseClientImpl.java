@@ -28,12 +28,12 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 	private final ChatRecordService chatRecordService;
 
 	private final WebClient webClient = WebClient.builder()
-		.baseUrl("http://ai-server-host") // TODO: 실제 호스트로 교체
+		.baseUrl("http://ai-server-host") // TODO: 실제 AI 서버로 교체
 		.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
 		.build();
 
 	@Override
-	public SseEmitter streamStartFeedback(FeedbackStartRequestDto requestDto) {
+	public SseEmitter startFeedbackSession(FeedbackStartRequestDto requestDto) {
 		SseEmitter emitter = new SseEmitter(0L); // 무한 SSE
 		chatEmitterRepository.save(requestDto.getSessionId(), emitter);
 
@@ -62,10 +62,11 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 			.doOnComplete(() -> {
 				emitter.complete();
 
-				// ChatRecord 저장
+				// ChatSession 조회
 				ChatSession chatSession = chatSessionRepository.findById(requestDto.getSessionId())
 					.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
 
+				// ChatRecord 저장
 				chatRecordService.save(chatSession, Role.assistant, fullResponse.toString().trim());
 			})
 			.subscribe();

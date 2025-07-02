@@ -47,29 +47,29 @@ public class FeedbackService {
 		return emitter;
 	}
 
-	public SseEmitter handleFeedbackAnswer(FeedbackAnswerRequestDto dto, Long userId) {
-		ChatSession chatSession = chatSessionRepository.findById(dto.getSessionId())
-			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
-
-		SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
-
-		aiClient.streamFeedbackAnswer(dto, emitter);
-
-		// 메시지 저장
-		chatRecordRepository.saveAll(ChatRecord.fromAnswerDto(dto, chatSession));
-
-		// 메시지 수가 10개 되면 요약 요청
-		List<ChatRecord> records = chatRecordRepository.findLast10BySessionId(dto.getSessionId());
-		if (records.size() == 10) {
-			ChatSummaryRequestDto summaryDto = ChatSummaryRequestDto.from(records);
-			ChatSummary summary = requestSummary(summaryDto);
-			chatSummaryRepository.save(summary);
-		}
-
-		return emitter;
-	}
-
-	public ChatSummary requestSummary(ChatSummaryRequestDto dto) {
-		return aiClient.requestSummary(dto);
-	}
+//	public SseEmitter handleFeedbackAnswer(FeedbackAnswerRequestDto dto, Long userId) {
+//		ChatSession chatSession = chatSessionRepository.findById(dto.getSessionId())
+//			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
+//
+//		SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+//
+//		aiClient.streamFeedbackAnswer(dto, emitter);
+//
+//		// 메시지 저장
+//		chatRecordRepository.saveAll(ChatRecord.fromAnswerDto(dto, chatSession));
+//
+//		// 메시지 수가 10개 되면 요약 요청
+//		List<ChatRecord> records = chatRecordRepository.findLast10BySessionId(dto.getSessionId());
+//		if (records.size() == 10) {
+//			ChatSummaryRequestDto summaryDto = ChatSummaryRequestDto.from(records);
+//			ChatSummary summary = requestSummary(summaryDto);
+//			chatSummaryRepository.save(summary);
+//		}
+//
+//		return emitter;
+//	}
+//
+//	public ChatSummary requestSummary(ChatSummaryRequestDto dto) {
+//		return aiClient.requestSummary(dto);
+//	}
 }

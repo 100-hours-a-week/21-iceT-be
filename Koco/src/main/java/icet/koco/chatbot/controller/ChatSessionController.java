@@ -1,14 +1,14 @@
 package icet.koco.chatbot.controller;
 
 import icet.koco.chatbot.dto.ChatSessionStartRequestDto;
+import icet.koco.chatbot.dto.UserMessageRequestDto;
 import icet.koco.chatbot.service.ChatSessionService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
@@ -29,5 +29,13 @@ public class ChatSessionController {
 			return chatSessionService.startFeedbackSession(requestDto, userId);
 		}
 		return null;
+	}
+
+	@PostMapping(value = "/session/{sessionId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+	public SseEmitter sendMessage(@PathVariable Long sessionId,
+											@RequestBody UserMessageRequestDto requestDto) {
+		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+		return chatSessionService.processUserMessage(sessionId, userId, requestDto.getContent());
 	}
 }
