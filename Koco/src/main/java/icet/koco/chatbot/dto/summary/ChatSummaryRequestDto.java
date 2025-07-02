@@ -16,7 +16,7 @@ import icet.koco.chatbot.entity.ChatRecord;
 @AllArgsConstructor
 public class ChatSummaryRequestDto {
 	private Long sessionId;
-	private String mode;
+//	private String mode;
 	private List<Message> messages;
 
 	@Data
@@ -27,15 +27,15 @@ public class ChatSummaryRequestDto {
 		private String content;
 	}
 
-	public static ChatSummaryRequestDto from(List<ChatRecord> records) {
-		List<ChatSummaryRequestDto.Message> messages = records.stream()
-			.map(record -> new ChatSummaryRequestDto.Message(record.getRole().name(), record.getContent()))
+	public static ChatSummaryRequestDto from(Long sessionId, List<ChatRecord> records) {
+		List<Message> messages = records.stream()
+			.map(record -> new Message(record.getRole().name(), record.getContent()))
 			.collect(Collectors.toList());
 
 		return ChatSummaryRequestDto.builder()
-			.sessionId(records.get(0).getChatSession().getId())
-			.mode("interview")
+			.sessionId(sessionId)
 			.messages(messages)
 			.build();
 	}
+
 }
