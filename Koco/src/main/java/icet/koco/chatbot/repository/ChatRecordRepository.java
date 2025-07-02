@@ -1,6 +1,7 @@
 package icet.koco.chatbot.repository;
 
 import icet.koco.chatbot.entity.ChatRecord;
+import icet.koco.chatbot.entity.ChatSession;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,4 +22,6 @@ public interface ChatRecordRepository extends JpaRepository<ChatRecord, Long> {
 	// turn을 자동으로 다음값으로 설정하기 위해서
 	@Query("SELECT COALESCE(MAX(r.turn), 0) FROM ChatRecord r WHERE r.chatSession.id = :sessionId")
 	int findMaxTurnBySessionId(@Param("sessionId") Long sessionId);
+
+	Long countByChatSession(ChatSession chatSession);
 }

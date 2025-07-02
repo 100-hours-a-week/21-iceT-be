@@ -83,7 +83,7 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 			})
 			.doOnNext(event -> {
 				String raw = (String) event.data(); // e.g. "data: Hello"
-				log.info("SSE 수신 원본: {}", raw);
+//				log.info("SSE 수신 원본: {}", raw);
 
 				String data = raw;
 
@@ -146,7 +146,7 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 			})
 			.doOnNext(event -> {
 				String data = event.data();
-				log.info("AI 응답 수신: {}", data);
+//				log.info("AI 응답 수신: {}", data);
 
 				if (data == null) {
 					log.info("data is null");

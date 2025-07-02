@@ -96,14 +96,29 @@ public class ChatSessionService {
 		// 유저가 보낸 메시지 저장
 		chatRecordService.save(session, ChatRecord.Role.user, content);
 
+		// 전체 메시지 수 체크 (해당 세션 기준)
+		long totalCount = chatRecordRepository.countByChatSession(session);
+
+		String summary;
+		boolean shouldUpdateSummary = (totalCount == 3 || totalCount % 11 == 0);
+
+		if (shouldUpdateSummary) {
+			System.out.println("summary 요청 | totalCount: " + totalCount);
+			List<ChatRecord> latestMessages = chatRecordRepository.findLast10BySessionId(sessionId);
+			ChatSummaryRequestDto summaryDto = ChatSummaryRequestDto.from(sessionId, latestMessages);
+
+			summary = summaryClient.requestSummary(summaryDto);
+			saveOrUpdateSummary(session, summary);
+		} else {
+			// 기존 summary 가져오기
+			System.out.println("summary 요청하지 않음 | totalCount: " + totalCount);
+			summary = chatSummaryRepository.findByChatSession(session)
+					.map(ChatSummary::getSummary)
+					.orElse("");
+		}
+
+		// 후속 피드백 요청
 		List<ChatRecord> latestMessages = chatRecordRepository.findLast10BySessionId(sessionId);
-		ChatSummaryRequestDto summaryDto = ChatSummaryRequestDto.from(sessionId, latestMessages);
-
-		String summary = summaryClient.requestSummary(summaryDto);
-
-		// 채팅 세션에 대한 요약이 없으면 새로 저장
-		saveOrUpdateSummary(session, summary);
-
 		FeedbackAnswerRequestDto answerRequest = FeedbackAnswerRequestDto.from(sessionId, summary, latestMessages);
 		return feedbackSseClient.streamFollowupFeedback(answerRequest);
 	}
@@ -123,6 +138,7 @@ public class ChatSessionService {
 					.build();
 			chatSummaryRepository.save(newOne);
 		}
+		System.out.println("summary 저장 또는 업데이트 완료");
 	}
 
 }
