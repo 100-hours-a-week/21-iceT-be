@@ -1,4 +1,4 @@
-package icet.koco.chatbot.dto.feedback;
+package icet.koco.chatbot.dto.ai;
 
 import icet.koco.chatbot.entity.ChatRecord;
 import lombok.AllArgsConstructor;
@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FeedbackAnswerRequestDto {
+public class ChatbotFollowupRequestDto {
 	private Long sessionId;
 	private String summary;
 	private List<Message> messages;
@@ -25,12 +25,12 @@ public class FeedbackAnswerRequestDto {
 		private String content;
 	}
 
-	public static FeedbackAnswerRequestDto from(Long sessionId, String summary, List<ChatRecord> messages) {
+	public static ChatbotFollowupRequestDto from(Long sessionId, String summary, List<ChatRecord> messages) {
 		List<Message> messageList = messages.stream()
 				.map(r -> new Message(r.getRole().name(), r.getContent()))
 				.collect(Collectors.toList());
 
-		return FeedbackAnswerRequestDto.builder()
+		return ChatbotFollowupRequestDto.builder()
 				.sessionId(sessionId)
 				.summary(summary)
 				.messages(messageList)

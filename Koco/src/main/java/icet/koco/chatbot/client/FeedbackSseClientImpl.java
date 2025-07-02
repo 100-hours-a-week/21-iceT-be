@@ -1,8 +1,8 @@
 package icet.koco.chatbot.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import icet.koco.chatbot.dto.feedback.FeedbackAnswerRequestDto;
-import icet.koco.chatbot.dto.feedback.FeedbackStartRequestDto;
+import icet.koco.chatbot.dto.ai.ChatbotFollowupRequestDto;
+import icet.koco.chatbot.dto.ai.ChatbotStartRequestDto;
 import icet.koco.chatbot.emitter.ChatEmitterRepository;
 import icet.koco.chatbot.entity.ChatRecord.Role;
 import icet.koco.chatbot.entity.ChatSession;
@@ -55,7 +55,7 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 	}
 
 	@Override
-	public SseEmitter startFeedbackSession(FeedbackStartRequestDto requestDto) {
+	public SseEmitter startFeedbackSession(ChatbotStartRequestDto requestDto) {
 		SseEmitter emitter = new SseEmitter(0L); // 무제한 SSE
 		chatEmitterRepository.save(requestDto.getSessionId(), emitter);
 
@@ -125,7 +125,7 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 	}
 
 	@Override
-	public SseEmitter streamFollowupFeedback(FeedbackAnswerRequestDto requestDto) {
+	public SseEmitter streamFollowupFeedback(ChatbotFollowupRequestDto requestDto) {
 		// SSE emitter 생성
 		SseEmitter emitter = new SseEmitter(0L);
 		chatEmitterRepository.save(requestDto.getSessionId(), emitter);

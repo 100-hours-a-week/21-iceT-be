@@ -2,8 +2,7 @@ package icet.koco.chatbot.entity;
 
 
 import icet.koco.chatbot.dto.ChatSessionStartRequestDto;
-import icet.koco.chatbot.dto.feedback.FeedbackAnswerRequestDto;
-import icet.koco.chatbot.dto.feedback.FeedbackStartRequestDto;
+import icet.koco.chatbot.dto.ai.ChatbotFollowupRequestDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -66,10 +65,10 @@ public class ChatRecord {
 	}
 
 
-	public static List<ChatRecord> fromAnswerDto(FeedbackAnswerRequestDto dto, ChatSession session) {
+	public static List<ChatRecord> fromAnswerDto(ChatbotFollowupRequestDto dto, ChatSession session) {
 		List<ChatRecord> records = new ArrayList<>();
 		int turn = 1;
-		for (FeedbackAnswerRequestDto.Message m : dto.getMessages()) {
+		for (ChatbotFollowupRequestDto.Message m : dto.getMessages()) {
 			records.add(ChatRecord.builder()
 				.chatSession(session)
 				.turn(turn++)

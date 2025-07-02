@@ -3,8 +3,8 @@ package icet.koco.chatbot.service;
 import icet.koco.chatbot.client.FeedbackSseClient;
 import icet.koco.chatbot.client.SummaryClient;
 import icet.koco.chatbot.dto.ChatSessionStartRequestDto;
-import icet.koco.chatbot.dto.feedback.FeedbackAnswerRequestDto;
-import icet.koco.chatbot.dto.feedback.FeedbackStartRequestDto;
+import icet.koco.chatbot.dto.ai.ChatbotFollowupRequestDto;
+import icet.koco.chatbot.dto.ai.ChatbotStartRequestDto;
 import icet.koco.chatbot.dto.summary.ChatSummaryRequestDto;
 import icet.koco.chatbot.entity.ChatRecord;
 import icet.koco.chatbot.entity.ChatSession;
@@ -68,7 +68,7 @@ public class ChatSessionService {
 		chatRecordRepository.saveAll(initRecord);
 
 		// AI 피드백 요청
-		FeedbackStartRequestDto request = FeedbackStartRequestDto.builder()
+		ChatbotStartRequestDto request = ChatbotStartRequestDto.builder()
 				.sessionId(session.getId())
 				.problemNumber(dto.getProblemNumber())
 				.title(problem.getTitle())
@@ -119,7 +119,7 @@ public class ChatSessionService {
 
 		// 후속 피드백 요청
 		List<ChatRecord> latestMessages = chatRecordRepository.findLast10BySessionId(sessionId);
-		FeedbackAnswerRequestDto answerRequest = FeedbackAnswerRequestDto.from(sessionId, summary, latestMessages);
+		ChatbotFollowupRequestDto answerRequest = ChatbotFollowupRequestDto.from(sessionId, summary, latestMessages);
 		return feedbackSseClient.streamFollowupFeedback(answerRequest);
 	}
 

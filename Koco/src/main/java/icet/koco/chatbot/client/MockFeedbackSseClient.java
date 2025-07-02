@@ -1,18 +1,16 @@
 package icet.koco.chatbot.client;
 
-import icet.koco.chatbot.dto.feedback.FeedbackAnswerRequestDto;
-import icet.koco.chatbot.dto.feedback.FeedbackStartRequestDto;
+import icet.koco.chatbot.dto.ai.ChatbotFollowupRequestDto;
+import icet.koco.chatbot.dto.ai.ChatbotStartRequestDto;
 import icet.koco.chatbot.emitter.ChatEmitterRepository;
 import icet.koco.chatbot.entity.ChatRecord.Role;
 import icet.koco.chatbot.entity.ChatSession;
-import icet.koco.chatbot.repository.ChatRecordRepository;
 import icet.koco.chatbot.repository.ChatSessionRepository;
 import icet.koco.chatbot.service.ChatRecordService;
 import icet.koco.enums.ErrorMessage;
 import icet.koco.global.exception.ResourceNotFoundException;
 import icet.koco.util.CookieUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -27,7 +25,7 @@ public class MockFeedbackSseClient implements FeedbackSseClient {
 	private final CookieUtil cookieUtil;
 
 	@Override
-	public SseEmitter startFeedbackSession(FeedbackStartRequestDto requestDto) {
+	public SseEmitter startFeedbackSession(ChatbotStartRequestDto requestDto) {
 		System.out.println("MOCK 세션 생성 - sessionId: " + requestDto.getSessionId());
 
 		// emitter 연결 무제한
@@ -72,7 +70,7 @@ public class MockFeedbackSseClient implements FeedbackSseClient {
 	}
 
 	@Override
-	public SseEmitter streamFollowupFeedback(FeedbackAnswerRequestDto requestDto) {
+	public SseEmitter streamFollowupFeedback(ChatbotFollowupRequestDto requestDto) {
 		System.out.println("MockFeedbackSseClient: streamAnswer(후속 질문 AI)");
 
 		SseEmitter emitter = new SseEmitter(0L); // 무제한
