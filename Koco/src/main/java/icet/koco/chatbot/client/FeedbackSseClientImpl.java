@@ -75,6 +75,7 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 			.accept(MediaType.TEXT_EVENT_STREAM)
 			.retrieve()
 			.bodyToFlux(new ParameterizedTypeReference<ServerSentEvent<String>>() {})
+			.filter(event -> event.data() != null)
 			.timeout(Duration.ofSeconds(60))
 			.onErrorResume(e -> {
 				emitter.completeWithError(e);
@@ -85,6 +86,12 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 				log.info("SSE 수신 원본: {}", raw);
 
 				String data = raw;
+
+				if (data == null) {
+					log.info("data is null");
+					return;
+				}
+
 				if (data != null && data.startsWith("data: ")) {
 					data = data.substring(6); // "data: " 제거
 				}
@@ -119,10 +126,9 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 
 	@Override
 	public SseEmitter streamFollowupFeedback(FeedbackAnswerRequestDto requestDto) {
-		SseEmitter emitter = chatEmitterRepository.findBySessionId(requestDto.getSessionId());
-		if (emitter == null) {
-			throw new IllegalStateException("SSE 연결이 존재하지 않습니다.");
-		}
+		// SSE emitter 생성
+		SseEmitter emitter = new SseEmitter(0L);
+		chatEmitterRepository.save(requestDto.getSessionId(), emitter);
 
 		StringBuilder fullResponse = new StringBuilder();
 
