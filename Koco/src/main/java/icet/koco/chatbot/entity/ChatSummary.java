@@ -21,11 +21,8 @@ public class ChatSummary {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "session_id")
 	private ChatSession chatSession;
-//
-//	@Column(name = "turn", nullable = false)
-//	private Integer turn;
 
-	@Column(name = "summary", columnDefinition = "TEXT")
+	@Column(name = "summary", columnDefinition = "LONGTEXT")
 	private String summary;
 
 	@Column(name = "created_at")

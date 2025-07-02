@@ -26,11 +26,6 @@ public class SummaryClientImpl implements SummaryClient {
 
 	private WebClient webClient;
 
-//	private final WebClient webClient = WebClient.builder()
-//		.baseUrl(baseUrl)	// TODO: 실제 AI 서버 주소로 바꿔야 함
-//		.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-//		.build();
-
 	@PostConstruct
 	public void initWebClient() {
 		log.info(">>> AI_BASE_URL 로드됨: {}", baseUrl);
