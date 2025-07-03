@@ -7,5 +7,5 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public interface InterviewSseClient {
 	SseEmitter startInterviewSession(ChatbotStartRequestDto requestDto);
-//	SseEmitter streamFollowupInterview(ChatbotFollowupRequestDto requestDto);
+	SseEmitter streamFollowupInterview(ChatbotFollowupRequestDto requestDto);
 }

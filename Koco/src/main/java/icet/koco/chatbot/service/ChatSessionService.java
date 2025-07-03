@@ -88,7 +88,7 @@ public class ChatSessionService {
 		return feedbackSseClient.startFeedbackSession(request);
 	}
 
-	public SseEmitter processUserMessage(Long sessionId, Long userId, String content) {
+	public SseEmitter followupFeedbackSession (Long sessionId, Long userId, String content) {
 		// 사용자 있는지 확인
 		userRepository.findByIdAndDeletedAtIsNull(userId)
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
@@ -128,6 +128,7 @@ public class ChatSessionService {
 	}
 
 	public SseEmitter startInterviewSession(ChatSessionStartRequestDto dto, Long userId) {
+		log.info("startInterviewSession - userId: " + userId);
 		// 사용자 찾기
 		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
 			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
@@ -168,6 +169,47 @@ public class ChatSessionService {
 			.build();
 
 		return interviewSseClient.startInterviewSession(request);
+	}
+
+	public SseEmitter followupInterviewSession(Long sessionId, Long userId, String content) {
+		log.info("FollowupInterviewSession - sessionId: " + sessionId + ", userId: " + userId);
+		// 사용자 있는지 확인
+		userRepository.findByIdAndDeletedAtIsNull(userId)
+				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
+
+		// 채팅 세션 찾기
+		ChatSession chatSession = chatSessionRepository.findById(sessionId)
+				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
+
+		// 유저가 보낸 메세지 저장
+		chatRecordService.save(chatSession, ChatRecord.Role.user, content);
+
+		// 전체 메세지 수 체크
+		Long totalCount = chatRecordRepository.countByChatSession(chatSession);
+
+		// 요약된 메세지
+		String summary;
+
+		boolean shouldUpdateSummary = (totalCount == 3 || totalCount % 11 == 0);
+
+		if (shouldUpdateSummary) {
+			log.info("요약 요청, totalCount: " + totalCount);
+			List<ChatRecord> latestMessages = chatRecordRepository.findLast10BySessionId(sessionId);
+			ChatSummaryRequestDto summaryDto = ChatSummaryRequestDto.from(sessionId, latestMessages);
+
+			summary = summaryClient.requestSummary(summaryDto);
+		} else {
+			// 기존 summary 사용
+			log.info("summary 요청하지 않음, totalCount: " + totalCount);
+			summary = chatSummaryRepository.findByChatSession(chatSession)
+					.map(ChatSummary::getSummary)
+					.orElse("");
+		}
+
+		// 후속 인터뷰 AI 요청
+		List<ChatRecord> latestMessages = chatRecordRepository.findLast10BySessionId(sessionId);
+		ChatbotFollowupRequestDto answerRequest = ChatbotFollowupRequestDto.from(sessionId, summary, latestMessages);
+		return interviewSseClient.streamFollowupInterview(answerRequest);
 	}
 
 	private void saveOrUpdateSummary(ChatSession session, String summary) {

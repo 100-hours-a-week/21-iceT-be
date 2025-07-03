@@ -46,8 +46,6 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 
 	@PostConstruct
 	public void initWebClient() {
-		log.info(">>> AI_BASE_URL 로드됨: {}", baseUrl);
-
 		this.webClient = WebClient.builder()
 			.baseUrl(baseUrl)
 			.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)

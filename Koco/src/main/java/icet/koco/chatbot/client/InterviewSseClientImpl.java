@@ -1,6 +1,7 @@
 package icet.koco.chatbot.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import icet.koco.chatbot.dto.ai.ChatbotFollowupRequestDto;
 import icet.koco.chatbot.dto.ai.ChatbotStartRequestDto;
 import icet.koco.chatbot.emitter.ChatEmitterRepository;
 import icet.koco.chatbot.entity.ChatRecord.Role;
@@ -44,8 +45,6 @@ public class InterviewSseClientImpl implements InterviewSseClient {
 
 	@PostConstruct
 	public void initWebClient() {
-		log.info(">>> AI_BASE_URL 로드됨: {}", baseUrl);
-
 		this.webClient = WebClient.builder()
 			.baseUrl(baseUrl)
 			.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -145,9 +144,62 @@ public class InterviewSseClientImpl implements InterviewSseClient {
 
 	}
 
-//	@Override
-//	public SseEmitter streamFollowupInterview(ChatbotFollowupRequestDto requestDto) {
-//
-//	};
+	@Override
+	public SseEmitter streamFollowupInterview(ChatbotFollowupRequestDto requestDto) {
+		// SSE emitter 생성
+		SseEmitter emitter = new SseEmitter(0L);
+		chatEmitterRepository.save(requestDto.getSessionId(), emitter);
 
+		// 챗봇 응답 누적
+		StringBuilder fullResponse = new StringBuilder();
+
+		webClient.post()
+			.uri("/api/ai/v2/interview/answer")
+			.bodyValue(requestDto)
+			.accept(MediaType.TEXT_EVENT_STREAM)
+			.retrieve()
+			.bodyToFlux(new ParameterizedTypeReference<ServerSentEvent<String>>() {})
+			.filter(event -> event.data() != null)
+			.timeout(Duration.ofSeconds(60))
+			.onErrorResume(e -> {
+				emitter.completeWithError(e);
+				return Flux.empty();
+			})
+			.doOnNext(event -> {
+				String data = event.data();
+//				log.info("AI 응답 수신: {}", data);
+
+				if (data == null) {
+					log.info("data is null");
+					return;
+				}
+
+				String content = data.startsWith("data: ") ? data.substring(6) : data;
+
+				try {
+					if (content.startsWith("[ERROR]")) {
+						emitter.send(SseEmitter.event().name("error").data(content));
+						emitter.completeWithError(new RuntimeException(content));
+					} else {
+						emitter.send(SseEmitter.event().name("message").data(content));
+						fullResponse.append(content).append("\n");
+					}
+				} catch (IOException e) {
+					emitter.completeWithError(e);
+				}
+			})
+			.doOnComplete(() -> {
+				emitter.complete();
+
+				// ChatSession 조회
+				ChatSession chatSession = chatSessionRepository.findById(requestDto.getSessionId())
+					.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
+
+				// ChatRecord 저장
+				chatRecordService.save(chatSession, Role.assistant, fullResponse.toString().trim());
+			})
+			.subscribe();
+
+		return emitter;
+	}
 }
