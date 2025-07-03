@@ -7,6 +7,8 @@ public enum ErrorMessage {
     // 400 (Bad Request - BadRequestException)
     INVALID_CATEGORY_INCLUDED("존재하지 않는 카테고리가 포함되어 있습니다."),
     INVALID_PROBLEM_INCLUDED("해당 문제 번호를 가진 백준 문제가 없습니다."),
+	INTERVIEW_ALREADY_FINISHED("이미 종료된 면접 세션입니다."),
+
 
     // 401 (Unauthorized - UnauthorizedException)
 	INVALID_ACCESS_TOKEN("유효하지 않은 access token 입니다."),
