@@ -23,7 +23,6 @@ public class ChatSessionController {
 
 	@PostMapping(value = "/session", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public SseEmitter startChatSession(@RequestBody ChatSessionStartRequestDto requestDto) {
-		System.out.println("ChatSessionController.startChatSession");
 		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
 		String mode = (requestDto.getMode()).toString();
@@ -44,10 +43,8 @@ public class ChatSessionController {
 		String mode = getMode(sessionId).toString();
 
 		if (mode.equals("feedback")) {
-			System.out.println("ChatSessionController.sendMessage - feedback");
 			return chatSessionService.followupFeedbackSession(sessionId, userId, requestDto.getContent());
 		} else if (mode.equals("interview")) {
-			System.out.println("ChatSessionController.sendMessage - interview");
 			return chatSessionService.followupInterviewSession(sessionId, userId, requestDto.getContent());
 		}
 		return null;

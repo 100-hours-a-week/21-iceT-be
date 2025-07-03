@@ -121,7 +121,6 @@ public class InterviewSseClientImpl implements InterviewSseClient {
 					}
 					emitter.completeWithError(new RuntimeException(data));
 				} else {
-					log.info("SSE 응답 수신: {}", data);
 					try {
 						emitter.send(SseEmitter.event().name("message").data(data));
 						fullResponse.append(data).append("\n");
@@ -131,7 +130,7 @@ public class InterviewSseClientImpl implements InterviewSseClient {
 				}
 			})
 			.doOnComplete(() -> {
-				log.info("SSE 응답 종료, 전체 응답 저장");
+				log.info("SessionId: {} | SSE 응답 종료, 전체 응답 저장", requestDto.getSessionId());
 				emitter.complete();
 				ChatSession chatSession = chatSessionRepository.findById(requestDto.getSessionId())
 					.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
@@ -167,7 +166,6 @@ public class InterviewSseClientImpl implements InterviewSseClient {
 			})
 			.doOnNext(event -> {
 				String data = event.data();
-//				log.info("AI 응답 수신: {}", data);
 
 				if (data == null) {
 					log.info("data is null");

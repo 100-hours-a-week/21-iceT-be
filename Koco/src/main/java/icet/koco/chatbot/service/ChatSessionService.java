@@ -49,9 +49,6 @@ public class ChatSessionService {
 		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
 
-		log.info("User: " + user.getNickname());
-		log.info("Mode: " + dto.getMode());
-
 		// 문제 찾기
 		Problem problem = problemRepository.findByNumber(dto.getProblemNumber())
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.PROBLEM_NOT_FOUND));
@@ -107,7 +104,7 @@ public class ChatSessionService {
 		boolean shouldUpdateSummary = (totalCount == 3 || totalCount % 11 == 0);
 
 		if (shouldUpdateSummary) {
-			System.out.println("summary 요청 | totalCount: " + totalCount);
+			// 새로운 summary 요청
 			List<ChatRecord> latestMessages = chatRecordRepository.findLast10BySessionId(sessionId);
 			ChatSummaryRequestDto summaryDto = ChatSummaryRequestDto.from(sessionId, latestMessages);
 
@@ -115,7 +112,6 @@ public class ChatSessionService {
 			saveOrUpdateSummary(session, summary);
 		} else {
 			// 기존 summary 가져오기
-			System.out.println("summary 요청하지 않음 | totalCount: " + totalCount);
 			summary = chatSummaryRepository.findByChatSession(session)
 					.map(ChatSummary::getSummary)
 					.orElse("");
@@ -128,13 +124,9 @@ public class ChatSessionService {
 	}
 
 	public SseEmitter startInterviewSession(ChatSessionStartRequestDto dto, Long userId) {
-		log.info("startInterviewSession - userId: " + userId);
 		// 사용자 찾기
 		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
 			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
-
-		log.info("User: " + user.getNickname());
-		log.info("Mode: " + dto.getMode());
 
 		// 문제 찾기
 		Problem problem = problemRepository.findByNumber(dto.getProblemNumber())
@@ -172,7 +164,6 @@ public class ChatSessionService {
 	}
 
 	public SseEmitter followupInterviewSession(Long sessionId, Long userId, String content) {
-		log.info("FollowupInterviewSession - sessionId: " + sessionId + ", userId: " + userId);
 		// 사용자 있는지 확인
 		userRepository.findByIdAndDeletedAtIsNull(userId)
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
@@ -193,14 +184,12 @@ public class ChatSessionService {
 		boolean shouldUpdateSummary = (totalCount == 3 || totalCount % 11 == 0);
 
 		if (shouldUpdateSummary) {
-			log.info("요약 요청, totalCount: " + totalCount);
 			List<ChatRecord> latestMessages = chatRecordRepository.findLast10BySessionId(sessionId);
 			ChatSummaryRequestDto summaryDto = ChatSummaryRequestDto.from(sessionId, latestMessages);
 
 			summary = summaryClient.requestSummary(summaryDto);
 		} else {
 			// 기존 summary 사용
-			log.info("summary 요청하지 않음, totalCount: " + totalCount);
 			summary = chatSummaryRepository.findByChatSession(chatSession)
 					.map(ChatSummary::getSummary)
 					.orElse("");
@@ -227,7 +216,6 @@ public class ChatSessionService {
 					.build();
 			chatSummaryRepository.save(newOne);
 		}
-		System.out.println("summary 저장 또는 업데이트 완료");
 	}
 
 }

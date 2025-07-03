@@ -56,7 +56,7 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 	public SseEmitter startFeedbackSession(ChatbotStartRequestDto requestDto) {
 		SseEmitter emitter = new SseEmitter(0L); // 무제한 SSE
 		chatEmitterRepository.save(requestDto.getSessionId(), emitter);
-
+		
 		// 요청 내용 로깅
 		try {
 			log.info(">>> [AI 요청] /api/ai/v2/feedback/start 전송 내용:\n{}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDto));
@@ -81,7 +81,6 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 			})
 			.doOnNext(event -> {
 				String raw = (String) event.data(); // e.g. "data: Hello"
-//				log.info("SSE 수신 원본: {}", raw);
 
 				String data = raw;
 
