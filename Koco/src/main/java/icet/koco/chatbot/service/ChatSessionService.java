@@ -14,6 +14,7 @@ import icet.koco.chatbot.repository.ChatRecordRepository;
 import icet.koco.chatbot.repository.ChatSessionRepository;
 import icet.koco.chatbot.repository.ChatSummaryRepository;
 import icet.koco.enums.ErrorMessage;
+import icet.koco.global.exception.InterviewAlreadyFinishedException;
 import icet.koco.global.exception.ResourceNotFoundException;
 import icet.koco.problemSet.entity.Problem;
 import icet.koco.problemSet.repository.ProblemRepository;
@@ -44,6 +45,12 @@ public class ChatSessionService {
 	private final InterviewSseClient interviewSseClient;
 	private final SummaryClient summaryClient;
 
+	/**
+	 * 피드백 세션 생성
+	 * @param dto
+	 * @param userId
+	 * @return
+	 */
 	public SseEmitter startFeedbackSession(ChatSessionStartRequestDto dto, Long userId) {
 		// 사용자 찾기
 		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
@@ -58,6 +65,7 @@ public class ChatSessionService {
 				ChatSession.builder()
 						.user(user)
 						.mode(dto.getMode())
+						.finished(false)
 						.problemNumber(problem.getNumber())
 						.title(problem.getTitle())
 						.createdAt(LocalDateTime.now())
@@ -85,6 +93,13 @@ public class ChatSessionService {
 		return feedbackSseClient.startFeedbackSession(request);
 	}
 
+	/**
+	 * 피드백 세션 후속 답변
+	 * @param sessionId
+	 * @param userId
+	 * @param content
+	 * @return
+	 */
 	public SseEmitter followupFeedbackSession (Long sessionId, Long userId, String content) {
 		// 사용자 있는지 확인
 		userRepository.findByIdAndDeletedAtIsNull(userId)
@@ -123,6 +138,12 @@ public class ChatSessionService {
 		return feedbackSseClient.streamFollowupFeedback(answerRequest);
 	}
 
+	/**
+	 * 인터뷰 세션 시작
+	 * @param dto
+	 * @param userId
+	 * @return
+	 */
 	public SseEmitter startInterviewSession(ChatSessionStartRequestDto dto, Long userId) {
 		// 사용자 찾기
 		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
@@ -136,6 +157,7 @@ public class ChatSessionService {
 			ChatSession.builder()
 				.user(user)
 				.mode(dto.getMode())
+				.finished(false)
 				.problemNumber(problem.getNumber())
 				.title(problem.getTitle())
 				.createdAt(LocalDateTime.now())
@@ -163,6 +185,13 @@ public class ChatSessionService {
 		return interviewSseClient.startInterviewSession(request);
 	}
 
+	/**
+	 * 인터뷰 챗봇 후속 답변
+	 * @param sessionId
+	 * @param userId
+	 * @param content
+	 * @return
+	 */
 	public SseEmitter followupInterviewSession(Long sessionId, Long userId, String content) {
 		// 사용자 있는지 확인
 		userRepository.findByIdAndDeletedAtIsNull(userId)
@@ -171,6 +200,11 @@ public class ChatSessionService {
 		// 채팅 세션 찾기
 		ChatSession chatSession = chatSessionRepository.findById(sessionId)
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
+
+		// 종료된 세션이면 예외
+		if (chatSession.getFinished()) {
+			throw new InterviewAlreadyFinishedException(ErrorMessage.INTERVIEW_ALREADY_FINISHED);
+		}
 
 		// 유저가 보낸 메세지 저장
 		chatRecordService.save(chatSession, ChatRecord.Role.user, content);
@@ -201,6 +235,11 @@ public class ChatSessionService {
 		return interviewSseClient.streamFollowupInterview(answerRequest);
 	}
 
+	/**
+	 * 요약 저장 / 업데이트
+	 * @param session
+	 * @param summary
+	 */
 	private void saveOrUpdateSummary(ChatSession session, String summary) {
 		Optional<ChatSummary> optional = chatSummaryRepository.findByChatSession(session);
 		if (optional.isPresent()) {
