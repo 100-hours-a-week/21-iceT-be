@@ -125,7 +125,7 @@ public class ChatSessionService {
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
 
 		// 채팅 세션 찾기
-		ChatSession session = chatSessionRepository.findById(sessionId)
+		ChatSession session = chatSessionRepository.findByIdAndDeletedAtIsNull(sessionId)
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
 
 		// 유저가 보낸 메시지 저장
@@ -200,7 +200,7 @@ public class ChatSessionService {
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
 
 		// 채팅 세션 찾기
-		ChatSession chatSession = chatSessionRepository.findById(sessionId)
+		ChatSession chatSession = chatSessionRepository.findByIdAndDeletedAtIsNull(sessionId)
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
 
 		// 종료된 세션이면 예외

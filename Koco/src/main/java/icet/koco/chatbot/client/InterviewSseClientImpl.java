@@ -132,7 +132,7 @@ public class InterviewSseClientImpl implements InterviewSseClient {
 			.doOnComplete(() -> {
 				log.info("SessionId: {} | SSE 응답 종료, 전체 응답 저장", requestDto.getSessionId());
 				emitter.complete();
-				ChatSession chatSession = chatSessionRepository.findById(requestDto.getSessionId())
+				ChatSession chatSession = chatSessionRepository.findByIdAndDeletedAtIsNull(requestDto.getSessionId())
 					.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
 				chatRecordService.save(chatSession, Role.assistant, fullResponse.toString().trim());
 			})
@@ -190,7 +190,7 @@ public class InterviewSseClientImpl implements InterviewSseClient {
 				emitter.complete();
 
 				// ChatSession 조회
-				ChatSession chatSession = chatSessionRepository.findById(requestDto.getSessionId())
+				ChatSession chatSession = chatSessionRepository.findByIdAndDeletedAtIsNull(requestDto.getSessionId())
 					.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
 
 				// ChatRecord 저장

@@ -54,7 +54,7 @@ public class MockFeedbackSseClient implements FeedbackSseClient {
 				emitter.complete();
 
 				// chatSession 조회
-				ChatSession chatSession = chatSessionRepository.findById(requestDto.getSessionId())
+				ChatSession chatSession = chatSessionRepository.findByIdAndDeletedAtIsNull(requestDto.getSessionId())
 					.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
 
 				// chatRecord 저장
@@ -92,7 +92,7 @@ public class MockFeedbackSseClient implements FeedbackSseClient {
 				emitter.complete();
 
 				// chatSession 조회
-				ChatSession chatSession = chatSessionRepository.findById(requestDto.getSessionId())
+				ChatSession chatSession = chatSessionRepository.findByIdAndDeletedAtIsNull(requestDto.getSessionId())
 						.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
 
 				// chatRecord 저장

@@ -112,7 +112,7 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 			})
 			.doOnComplete(() -> {
 				emitter.complete();
-				ChatSession chatSession = chatSessionRepository.findById(requestDto.getSessionId())
+				ChatSession chatSession = chatSessionRepository.findByIdAndDeletedAtIsNull(requestDto.getSessionId())
 					.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
 				chatRecordService.save(chatSession, Role.assistant, fullResponse.toString().trim());
 			})
@@ -168,7 +168,7 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 				emitter.complete();
 
 				// ChatSession 조회
-				ChatSession chatSession = chatSessionRepository.findById(requestDto.getSessionId())
+				ChatSession chatSession = chatSessionRepository.findByIdAndDeletedAtIsNull(requestDto.getSessionId())
 					.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
 
 				// ChatRecord 저장

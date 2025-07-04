@@ -106,7 +106,7 @@ public class ChatSessionController {
 	 * @return ChatSession.Mode
 	 */
 	public String getMode(Long sessionId) {
-		ChatSession chatSession = chatSessionRepository.findById(sessionId)
+		ChatSession chatSession = chatSessionRepository.findByIdAndDeletedAtIsNull(sessionId)
 			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
 
 		return chatSession.getMode().toString();
