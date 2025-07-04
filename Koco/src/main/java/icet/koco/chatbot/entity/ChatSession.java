@@ -35,6 +35,12 @@ public class ChatSession {
 	@Column(name = "title")
 	private String title;
 
+	@Column(name = "user_code", columnDefinition = "LONGTEXT")
+	private String userCode;
+
+	@Column(name = "user_language")
+	private String userLanguage;
+
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 
