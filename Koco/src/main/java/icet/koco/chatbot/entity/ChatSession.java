@@ -48,6 +48,7 @@ public class ChatSession {
 	private LocalDateTime deletedAt;
 
 	// 해당 세션이 종료되었는지 (AI 에이전트에서 판단한 값)
+	@Builder.Default
 	@Column(name = "is_finished", nullable = false)
 	private Boolean finished = Boolean.FALSE;
 
