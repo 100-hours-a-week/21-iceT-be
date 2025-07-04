@@ -3,6 +3,7 @@ package icet.koco.chatbot.service;
 import icet.koco.chatbot.client.FeedbackSseClient;
 import icet.koco.chatbot.client.InterviewSseClient;
 import icet.koco.chatbot.client.SummaryClient;
+import icet.koco.chatbot.dto.ChatSessionResponseDto;
 import icet.koco.chatbot.dto.ChatSessionStartRequestDto;
 import icet.koco.chatbot.dto.ai.ChatbotFollowupRequestDto;
 import icet.koco.chatbot.dto.ai.ChatbotStartRequestDto;
@@ -45,49 +46,67 @@ public class ChatSessionService {
 	private final InterviewSseClient interviewSseClient;
 	private final SummaryClient summaryClient;
 
-	/**
-	 * 피드백 세션 생성
-	 * @param dto
-	 * @param userId
-	 * @return
-	 */
-	public SseEmitter startFeedbackSession(ChatSessionStartRequestDto dto, Long userId) {
+	public ChatSessionResponseDto initChatSession(Long userId, ChatSessionStartRequestDto requestDto) {
 		// 사용자 찾기
-		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+		User user = userRepository.findByIdAndDeletedAtIsNull((userId))
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
 
 		// 문제 찾기
-		Problem problem = problemRepository.findByNumber(dto.getProblemNumber())
+		Problem problem = problemRepository.findByNumber(requestDto.getProblemNumber())
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.PROBLEM_NOT_FOUND));
 
 		// 채팅 세션 생성
-		ChatSession session = chatSessionRepository.save(
+		ChatSession chatSession = chatSessionRepository.save(
 				ChatSession.builder()
 						.user(user)
-						.mode(dto.getMode())
-						.finished(false)
+						.mode(requestDto.getMode())
 						.problemNumber(problem.getNumber())
 						.title(problem.getTitle())
+						.userCode(requestDto.getUserCode())
+						.userLanguage(requestDto.getLanguage())
 						.createdAt(LocalDateTime.now())
+						.finished(false)
 						.build()
 		);
 
-		// 사용자 메세지 저장
-		List<ChatRecord> initRecord = ChatRecord.fromStartDto(dto, session);
+		// 채팅 세션 Id
+		Long sessionId = chatSession.getId();
+
+		// 최초 user 메시지 저장
+		List<ChatRecord> initRecord = ChatRecord.fromStartDto(requestDto, chatSession);
 		chatRecordRepository.saveAll(initRecord);
+
+		// sessionId 리턴
+		return ChatSessionResponseDto.builder()
+				.sessionId(sessionId)
+				.build();
+	}
+
+	public SseEmitter startFeedbackSession(Long userId, Long sessionId) {
+		// 사용자 확인
+		userRepository.findByIdAndDeletedAtIsNull(userId)
+				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
+
+		// 세션 찾기
+		ChatSession chatSession = chatSessionRepository.findByIdAndDeletedAtIsNull(sessionId)
+				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
+
+		// 문제 찾기
+		Problem problem = problemRepository.findByNumber(chatSession.getProblemNumber())
+				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.PROBLEM_NOT_FOUND));
 
 		// AI 피드백 요청
 		ChatbotStartRequestDto request = ChatbotStartRequestDto.builder()
-				.sessionId(session.getId())
-				.problemNumber(dto.getProblemNumber())
+				.sessionId(chatSession.getId())
+				.problemNumber(problem.getNumber())
 				.title(problem.getTitle())
 				.description(problem.getDescription())
 				.inputDescription(problem.getInputDescription())
 				.outputDescription(problem.getOutputDescription())
 				.inputExample(problem.getInputExample())
 				.outputExample(problem.getOutputExample())
-				.codeLanguage(dto.getLanguage())
-				.code(dto.getUserCode())
+				.codeLanguage(chatSession.getUserLanguage())
+				.code(chatSession.getUserCode())
 				.build();
 
 		return feedbackSseClient.startFeedbackSession(request);
@@ -138,49 +157,32 @@ public class ChatSessionService {
 		return feedbackSseClient.streamFollowupFeedback(answerRequest);
 	}
 
-	/**
-	 * 인터뷰 세션 시작
-	 * @param dto
-	 * @param userId
-	 * @return
-	 */
-	public SseEmitter startInterviewSession(ChatSessionStartRequestDto dto, Long userId) {
-		// 사용자 찾기
-		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
+	public SseEmitter startInterviewSession(Long userId, Long sessionId) {
+		// 사용자 확인
+		userRepository.findByIdAndDeletedAtIsNull(userId)
+				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
+
+		// 세션 찾기
+		ChatSession chatSession = chatSessionRepository.findByIdAndDeletedAtIsNull(sessionId)
+				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
 
 		// 문제 찾기
-		Problem problem = problemRepository.findByNumber(dto.getProblemNumber())
-			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.PROBLEM_NOT_FOUND));
-
-		ChatSession session = chatSessionRepository.save(
-			ChatSession.builder()
-				.user(user)
-				.mode(dto.getMode())
-				.finished(false)
-				.problemNumber(problem.getNumber())
-				.title(problem.getTitle())
-				.createdAt(LocalDateTime.now())
-				.build()
-		);
-
-		// 사용자 메세지 저장
-		List<ChatRecord> initRecord = ChatRecord.fromStartDto(dto, session);
-		chatRecordRepository.saveAll(initRecord);
+		Problem problem = problemRepository.findByNumber(chatSession.getProblemNumber())
+				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.PROBLEM_NOT_FOUND));
 
 		// AI 피드백 요청
 		ChatbotStartRequestDto request = ChatbotStartRequestDto.builder()
-			.sessionId(session.getId())
-			.problemNumber(dto.getProblemNumber())
-			.title(problem.getTitle())
-			.description(problem.getDescription())
-			.inputDescription(problem.getInputDescription())
-			.outputDescription(problem.getOutputDescription())
-			.inputExample(problem.getInputExample())
-			.outputExample(problem.getOutputExample())
-			.codeLanguage(dto.getLanguage())
-			.code(dto.getUserCode())
-			.build();
+				.sessionId(chatSession.getId())
+				.problemNumber(problem.getNumber())
+				.title(problem.getTitle())
+				.description(problem.getDescription())
+				.inputDescription(problem.getInputDescription())
+				.outputDescription(problem.getOutputDescription())
+				.inputExample(problem.getInputExample())
+				.outputExample(problem.getOutputExample())
+				.codeLanguage(chatSession.getUserLanguage())
+				.code(chatSession.getUserCode())
+				.build();
 
 		return interviewSseClient.startInterviewSession(request);
 	}
@@ -255,6 +257,13 @@ public class ChatSessionService {
 					.build();
 			chatSummaryRepository.save(newOne);
 		}
+	}
+
+
+	public String getModeBySessionId(Long sessionId) {
+		return chatSessionRepository.findById(sessionId)
+				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND))
+				.getMode().toString();
 	}
 
 }
