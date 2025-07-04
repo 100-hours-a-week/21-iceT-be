@@ -1,4 +1,4 @@
-package icet.koco.chatbot.dto.feedback;
+package icet.koco.chatbot.dto.ai;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FeedbackStartRequestDto {
+public class ChatbotStartRequestDto {
 	private Long sessionId;
 	private Long problemNumber;
 	private String title;

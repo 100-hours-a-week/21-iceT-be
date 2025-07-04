@@ -4,8 +4,6 @@ package icet.koco.chatbot.entity;
 import icet.koco.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 
 
 import java.time.LocalDateTime;
@@ -44,8 +42,8 @@ public class ChatSession {
 	private LocalDateTime deletedAt;
 
 	// 해당 세션이 종료되었는지 (AI 에이전트에서 판단한 값)
-	@Column(name = "is_finished")
-	private Boolean finished;
+	@Column(name = "is_finished", nullable = false)
+	private Boolean finished = Boolean.FALSE;
 
 	public enum Mode {
 		feedback, interview;
