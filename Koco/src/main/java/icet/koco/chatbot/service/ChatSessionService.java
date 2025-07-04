@@ -259,6 +259,28 @@ public class ChatSessionService {
 		}
 	}
 
+	public void deleteChatSessions(Long userId, List<Long> sessionIds) {
+		// 사용자 확인
+		userRepository.findByIdAndDeletedAtIsNull(userId)
+				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
+
+		// 세션들 찾기
+		List<ChatSession> chatSessions = chatSessionRepository.findAllByIdInAndDeletedAtIsNull(sessionIds);
+
+		// 비어있는지 확인
+		if (sessionIds == null || sessionIds.isEmpty()) {
+			throw new IllegalArgumentException("삭제할 세션 ID가 비어 있습니다.");
+		}
+
+		for (ChatSession chatSession : chatSessions) {
+			if (!chatSession.getUser().getId().equals(userId)) {
+				throw new IllegalArgumentException("본인 세션만 삭제할 수 있습니다.");
+			}
+			chatSession.setDeletedAt(LocalDateTime.now()); // softDelete 처리
+			chatSessionRepository.save(chatSession);
+		}
+
+	}
 
 	public String getModeBySessionId(Long sessionId) {
 		return chatSessionRepository.findById(sessionId)
