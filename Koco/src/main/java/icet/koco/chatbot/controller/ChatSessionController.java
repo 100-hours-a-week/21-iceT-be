@@ -1,41 +1,59 @@
 package icet.koco.chatbot.controller;
 
+import icet.koco.chatbot.dto.ChatSessionResponseDto;
 import icet.koco.chatbot.dto.ChatSessionStartRequestDto;
 import icet.koco.chatbot.dto.UserMessageRequestDto;
 import icet.koco.chatbot.entity.ChatSession;
 import icet.koco.chatbot.repository.ChatSessionRepository;
 import icet.koco.chatbot.service.ChatSessionService;
+import icet.koco.enums.ApiResponseCode;
 import icet.koco.enums.ErrorMessage;
+import icet.koco.global.dto.ApiResponse;
 import icet.koco.global.exception.ResourceNotFoundException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 @RequestMapping("/api/backend/v2/chat")
+@Tag(name = "ChatBot", description = "챗봇 관련 API입니다.")
 @RequiredArgsConstructor
 public class ChatSessionController {
 
 	private final ChatSessionService chatSessionService;
 	private final ChatSessionRepository chatSessionRepository;
 
-	@PostMapping(value = "/session", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-	public SseEmitter startChatSession(@RequestBody ChatSessionStartRequestDto requestDto) {
+	@PostMapping("/init")
+	@Operation(summary = "세션을 생성해서 sessionId를 리턴하는 API입니다.")
+	public ResponseEntity<?> initChatSession(@RequestBody ChatSessionStartRequestDto requestDto) {
 		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-		String mode = (requestDto.getMode()).toString();
-
-		if (mode.equals("feedback")) {
-			return chatSessionService.startFeedbackSession(requestDto, userId);
-		} else if (mode.equals("interview")) {
-			return chatSessionService.startInterviewSession(requestDto, userId);
-		}
-		return null;
+		ChatSessionResponseDto responseDto = chatSessionService.initChatSession(userId, requestDto);
+		return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.CHAT_SESSION_CREATED, "체팅 세션 생성", responseDto));
 	}
 
-	@PostMapping(value = "/session/{sessionId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+	@PostMapping(value = "/session/{sessionId}/start", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+	@Operation(summary = "챗봇을 호출하여 채팅을 시작하는 API입니다.")
+	public SseEmitter startChatSession(@PathVariable Long sessionId) {
+		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		String mode = chatSessionService.getModeBySessionId(sessionId);
+
+		switch (mode) {
+			case "feedback":
+				return chatSessionService.startFeedbackSession(userId, sessionId);
+			case "interview":
+				return chatSessionService.startInterviewSession(userId, sessionId);
+			default:
+				throw new IllegalArgumentException("Unknown mode: " + mode);
+		}
+	}
+
+	@PostMapping(value = "/session/{sessionId}/followup", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+	@Operation(summary = "후속질문하는 API입니다.")
 	public SseEmitter sendMessage(@PathVariable Long sessionId,
 											@RequestBody UserMessageRequestDto requestDto) {
 		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -55,10 +73,10 @@ public class ChatSessionController {
 	 * @param sessionId 세션id
 	 * @return ChatSession.Mode
 	 */
-	public ChatSession.Mode getMode(Long sessionId) {
+	public String getMode(Long sessionId) {
 		ChatSession chatSession = chatSessionRepository.findById(sessionId)
 			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
 
-		return chatSession.getMode();
+		return chatSession.getMode().toString();
 	}
 }
