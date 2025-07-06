@@ -125,7 +125,7 @@ public class ChatSessionService {
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
 
 		// 채팅 세션 찾기
-		ChatSession session = chatSessionRepository.findById(sessionId)
+		ChatSession session = chatSessionRepository.findByIdAndDeletedAtIsNull(sessionId)
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
 
 		// 유저가 보낸 메시지 저장
@@ -200,7 +200,7 @@ public class ChatSessionService {
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
 
 		// 채팅 세션 찾기
-		ChatSession chatSession = chatSessionRepository.findById(sessionId)
+		ChatSession chatSession = chatSessionRepository.findByIdAndDeletedAtIsNull(sessionId)
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
 
 		// 종료된 세션이면 예외
@@ -259,6 +259,28 @@ public class ChatSessionService {
 		}
 	}
 
+	public void deleteChatSessions(Long userId, List<Long> sessionIds) {
+		// 사용자 확인
+		userRepository.findByIdAndDeletedAtIsNull(userId)
+				.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
+
+		// 세션들 찾기
+		List<ChatSession> chatSessions = chatSessionRepository.findAllByIdInAndDeletedAtIsNull(sessionIds);
+
+		// 비어있는지 확인
+		if (sessionIds == null || sessionIds.isEmpty()) {
+			throw new IllegalArgumentException("삭제할 세션 ID가 비어 있습니다.");
+		}
+
+		for (ChatSession chatSession : chatSessions) {
+			if (!chatSession.getUser().getId().equals(userId)) {
+				throw new IllegalArgumentException("본인 세션만 삭제할 수 있습니다.");
+			}
+			chatSession.setDeletedAt(LocalDateTime.now()); // softDelete 처리
+			chatSessionRepository.save(chatSession);
+		}
+
+	}
 
 	public String getModeBySessionId(Long sessionId) {
 		return chatSessionRepository.findById(sessionId)

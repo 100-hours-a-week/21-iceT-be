@@ -14,7 +14,7 @@ public class InterviewService {
 	private final ChatSessionRepository chatSessionRepository;
 
 	public void interviewEndCheck(InterviewEndRequestDto requestDto) {
-		ChatSession chatSession = chatSessionRepository.findById(requestDto.getSessionId())
+		ChatSession chatSession = chatSessionRepository.findByIdAndDeletedAtIsNull(requestDto.getSessionId())
 			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
 
 		boolean isEnded = requestDto.isFinished();

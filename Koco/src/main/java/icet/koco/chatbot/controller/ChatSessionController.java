@@ -19,6 +19,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/api/backend/v2/chat")
 @Tag(name = "ChatBot", description = "챗봇 관련 API입니다.")
@@ -69,12 +73,40 @@ public class ChatSessionController {
 	}
 
 	/**
+	 * 세션 삭제 API
+	 * @param sessionIdsHeader RequestHeader의 sessionId
+	 * @return	204
+	 */
+	@DeleteMapping("/session/delete")
+	@Operation(summary = "선택한 챗봇 세션을 삭제하는 API입니다.")
+	public ResponseEntity<?> deleteChatSession( @RequestHeader("Session-Ids") String sessionIdsHeader) {
+		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+		System.out.println(sessionIdsHeader);
+
+		if (sessionIdsHeader == null || sessionIdsHeader.trim().isEmpty()) {
+			throw new IllegalArgumentException("Session-Ids 헤더가 비어있습니다.");
+		}
+
+		List<Long> sessionIds = Arrays.stream(sessionIdsHeader.split(", "))
+			.map(String::trim)
+			.map(Long::parseLong)
+			.collect(Collectors.toList());
+
+		System.out.println("sessionIds: " + sessionIds);
+
+		chatSessionService.deleteChatSessions(userId, sessionIds);
+
+		return ResponseEntity.noContent().build();
+	}
+
+	/**
 	 * 세션의 모드를 구함
 	 * @param sessionId 세션id
 	 * @return ChatSession.Mode
 	 */
 	public String getMode(Long sessionId) {
-		ChatSession chatSession = chatSessionRepository.findById(sessionId)
+		ChatSession chatSession = chatSessionRepository.findByIdAndDeletedAtIsNull(sessionId)
 			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
 
 		return chatSession.getMode().toString();
