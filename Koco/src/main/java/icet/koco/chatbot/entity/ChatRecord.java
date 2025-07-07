@@ -30,6 +30,7 @@ public class ChatRecord {
 	@Column(name = "turn")
 	private Integer turn;
 
+	@Enumerated(EnumType.STRING)
 	@Column(name = "role")
 	private Role role;
 
@@ -43,16 +44,6 @@ public class ChatRecord {
 	public enum Role {
 		user, assistant
 	}
-
-//	public static List<ChatRecord> fromStartDto(FeedbackStartRequestDto dto, ChatSession session) {
-//		return List.of(ChatRecord.builder()
-//			.chatSession(session)
-//			.turn(1)
-//			.role(Role.user)
-//			.content(dto.getCode())
-//			.createdAt(LocalDateTime.now())
-//			.build());
-//	}
 
 	public static List<ChatRecord> fromStartDto(ChatSessionStartRequestDto dto, ChatSession session) {
 		return List.of(ChatRecord.builder()

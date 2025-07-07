@@ -24,4 +24,7 @@ public interface ChatRecordRepository extends JpaRepository<ChatRecord, Long> {
 	int findMaxTurnBySessionId(@Param("sessionId") Long sessionId);
 
 	Long countByChatSession(ChatSession chatSession);
+
+	// sessionId를 기준으로 채팅 이록 가져오기
+	List<ChatRecord> findByChatSessionIdOrderByCreatedAtAsc(Long sessionId);
 }

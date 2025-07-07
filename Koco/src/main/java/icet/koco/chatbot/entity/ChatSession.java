@@ -26,6 +26,7 @@ public class ChatSession {
 	private User user;
 
 	// 챗봇 모드
+	@Enumerated(EnumType.STRING)
 	@Column(name = "mode")
 	private Mode mode;
 

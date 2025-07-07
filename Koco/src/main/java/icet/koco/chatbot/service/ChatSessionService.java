@@ -7,6 +7,7 @@ import icet.koco.chatbot.dto.ChatSessionResponseDto;
 import icet.koco.chatbot.dto.ChatSessionStartRequestDto;
 import icet.koco.chatbot.dto.ai.ChatbotFollowupRequestDto;
 import icet.koco.chatbot.dto.ai.ChatbotStartRequestDto;
+import icet.koco.chatbot.dto.history.ChatHistoryResponseDto;
 import icet.koco.chatbot.dto.summary.ChatSummaryRequestDto;
 import icet.koco.chatbot.entity.ChatRecord;
 import icet.koco.chatbot.entity.ChatSession;
@@ -15,6 +16,7 @@ import icet.koco.chatbot.repository.ChatRecordRepository;
 import icet.koco.chatbot.repository.ChatSessionRepository;
 import icet.koco.chatbot.repository.ChatSummaryRepository;
 import icet.koco.enums.ErrorMessage;
+import icet.koco.global.exception.ForbiddenException;
 import icet.koco.global.exception.InterviewAlreadyFinishedException;
 import icet.koco.global.exception.ResourceNotFoundException;
 import icet.koco.problemSet.entity.Problem;
@@ -235,6 +237,27 @@ public class ChatSessionService {
 		List<ChatRecord> latestMessages = chatRecordRepository.findLast10BySessionId(sessionId);
 		ChatbotFollowupRequestDto answerRequest = ChatbotFollowupRequestDto.from(sessionId, summary, latestMessages);
 		return interviewSseClient.streamFollowupInterview(answerRequest);
+	}
+
+	public ChatHistoryResponseDto getChatSessionHistory(Long userId, Long sessionId) {
+		// 사용자 찾기
+		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
+
+		// 세션 찾기
+		ChatSession chatSession = chatSessionRepository.findByIdAndDeletedAtIsNull(sessionId)
+			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CHAT_SESSION_NOT_FOUND));
+
+		// 권한 확인
+		if (!chatSession.getUser().equals(user)) {
+			throw new ForbiddenException(ErrorMessage.NO_CHAT_HISTORY_PERMISSION);
+		}
+
+		// DTO 생성
+		List<ChatRecord> chatRecords = chatRecordRepository.findByChatSessionIdOrderByCreatedAtAsc(sessionId);
+
+		return ChatHistoryResponseDto.from(chatSession, chatRecords);
+
 	}
 
 	/**

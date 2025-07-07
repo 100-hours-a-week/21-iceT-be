@@ -3,6 +3,7 @@ package icet.koco.chatbot.controller;
 import icet.koco.chatbot.dto.ChatSessionResponseDto;
 import icet.koco.chatbot.dto.ChatSessionStartRequestDto;
 import icet.koco.chatbot.dto.UserMessageRequestDto;
+import icet.koco.chatbot.dto.history.ChatHistoryResponseDto;
 import icet.koco.chatbot.entity.ChatSession;
 import icet.koco.chatbot.repository.ChatSessionRepository;
 import icet.koco.chatbot.service.ChatSessionService;
@@ -98,6 +99,21 @@ public class ChatSessionController {
 		chatSessionService.deleteChatSessions(userId, sessionIds);
 
 		return ResponseEntity.noContent().build();
+	}
+
+	/**
+	 * 대화 이력 세부 조회
+	 * @param sessionId pathVariable
+	 * @return 대화 이력
+	 */
+	@Operation(summary = "챗봇 세션 대화 이력 세부 조회를 하는 API입니다.")
+	@GetMapping("/history/{sessionId}")
+	public ResponseEntity<?> getChatSessionHistory(@PathVariable Long sessionId) {
+		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+		ChatHistoryResponseDto responseDto = chatSessionService.getChatSessionHistory(userId, sessionId);
+
+		return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.CHAT_HISTORY_FETCH_SUCCESS, "대화 이력을 성공적으로 불러왔습니다.", responseDto));
 	}
 
 	/**
