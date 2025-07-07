@@ -1,5 +1,6 @@
 package icet.koco.chatbot.dto.history;
 
+import icet.koco.chatbot.entity.ChatSession;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,7 @@ public class ChatSessionListResponseDto {
 	public static class ChatSessionDto {
 		private Long sessionId;
 		private String title;
+		private ChatSession.Mode mode;
 		private LocalDateTime createdAt;
 	}
 }
