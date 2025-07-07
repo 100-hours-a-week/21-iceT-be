@@ -24,6 +24,7 @@ public enum ErrorMessage {
     NO_COMMENT_PERMISSION("댓글 수정/삭제 권한이 없습니다."),
 	NO_ALARM_PERMISSION("해당 알림을 읽음/삭제할 권한이 없습니다."),
 	NO_LIKE_PERMISSION("본인의 좋아요만 취소할 수 있습니다."),
+	NO_CHAT_HISTORY_PERMISSION("채팅 이력을 볼 권한이 없습니다."),
 
 
     // 404 (Not Found - ResourceNotFoundException)
