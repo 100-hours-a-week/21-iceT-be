@@ -4,6 +4,7 @@ import icet.koco.chatbot.dto.ChatSessionResponseDto;
 import icet.koco.chatbot.dto.ChatSessionStartRequestDto;
 import icet.koco.chatbot.dto.UserMessageRequestDto;
 import icet.koco.chatbot.dto.history.ChatHistoryResponseDto;
+import icet.koco.chatbot.dto.history.ChatSessionListResponseDto;
 import icet.koco.chatbot.entity.ChatSession;
 import icet.koco.chatbot.repository.ChatSessionRepository;
 import icet.koco.chatbot.service.ChatSessionService;
@@ -116,9 +117,22 @@ public class ChatSessionController {
 		return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.CHAT_HISTORY_FETCH_SUCCESS, "대화 이력을 성공적으로 불러왔습니다.", responseDto));
 	}
 
+	@Operation(summary = "챗봇 세션 리스트를 조회하는 API입니다.")
+	@GetMapping("/history")
+	public ResponseEntity<?> getChatSessionList(
+		@RequestParam(required = false) Long cursorId,
+		@RequestParam(required = false, defaultValue = "10") int size
+	) {
+		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+		ChatSessionListResponseDto responseDto = chatSessionService.getChatSessionList(userId, cursorId, size);
+
+		return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.CHAT_LIST_FETCH_SUCCESS, "대화 세션 리스트 조회에 성공하였습니다.", responseDto));
+	}
+
 	/**
 	 * 세션의 모드를 구함
-	 * @param sessionId 세션id
+	 * @param sessionId 세션 ID
 	 * @return ChatSession.Mode
 	 */
 	public String getMode(Long sessionId) {

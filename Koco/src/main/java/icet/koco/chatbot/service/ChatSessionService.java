@@ -8,6 +8,7 @@ import icet.koco.chatbot.dto.ChatSessionStartRequestDto;
 import icet.koco.chatbot.dto.ai.ChatbotFollowupRequestDto;
 import icet.koco.chatbot.dto.ai.ChatbotStartRequestDto;
 import icet.koco.chatbot.dto.history.ChatHistoryResponseDto;
+import icet.koco.chatbot.dto.history.ChatSessionListResponseDto;
 import icet.koco.chatbot.dto.summary.ChatSummaryRequestDto;
 import icet.koco.chatbot.entity.ChatRecord;
 import icet.koco.chatbot.entity.ChatSession;
@@ -239,6 +240,12 @@ public class ChatSessionService {
 		return interviewSseClient.streamFollowupInterview(answerRequest);
 	}
 
+	/**
+	 * 세션 채팅 이력 세부 조회
+	 * @param userId
+	 * @param sessionId
+	 * @return
+	 */
 	public ChatHistoryResponseDto getChatSessionHistory(Long userId, Long sessionId) {
 		// 사용자 찾기
 		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
@@ -258,6 +265,42 @@ public class ChatSessionService {
 
 		return ChatHistoryResponseDto.from(chatSession, chatRecords);
 
+	}
+
+	/**
+	 * 챗봇 세션 리스트 조회
+	 * @param userId 사용자 ID
+	 * @param cursorId 커서
+	 * @param size 사이즈 (기본 10)
+	 * @return ChatSessionListResponseDto
+	 */
+	public ChatSessionListResponseDto getChatSessionList(Long userId, Long cursorId, int size) {
+		// 유저 찾기
+		userRepository.findByIdAndDeletedAtIsNull(userId)
+			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
+
+		List<ChatSession> sessions = chatSessionRepository.findChatSessions(userId, cursorId,
+			size + 1);
+
+		boolean hasNext = sessions.size() > size;
+		if (hasNext)
+			sessions.remove(size);
+
+		Long nextCursorId = sessions.isEmpty() ? null : sessions.get(sessions.size() - 1).getId();
+
+		List<ChatSessionListResponseDto.ChatSessionDto> sessionDtos = sessions.stream()
+			.map(session -> ChatSessionListResponseDto.ChatSessionDto.builder()
+				.sessionId(session.getId())
+				.title(session.getTitle())
+				.createdAt(session.getCreatedAt())
+				.build())
+			.toList();
+
+		return ChatSessionListResponseDto.builder()
+			.nextCursorId(nextCursorId)
+			.hasNext(hasNext)
+			.chatSessions(sessionDtos)
+			.build();
 	}
 
 	/**
