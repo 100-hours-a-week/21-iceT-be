@@ -227,6 +227,7 @@ public class ChatSessionService {
 			ChatSummaryRequestDto summaryDto = ChatSummaryRequestDto.from(sessionId, latestMessages);
 
 			summary = summaryClient.requestSummary(summaryDto);
+			saveOrUpdateSummary(chatSession, summary);
 		} else {
 			// 기존 summary 사용
 			summary = chatSummaryRepository.findByChatSession(chatSession)
