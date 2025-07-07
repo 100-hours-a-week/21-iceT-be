@@ -292,6 +292,7 @@ public class ChatSessionService {
 			.map(session -> ChatSessionListResponseDto.ChatSessionDto.builder()
 				.sessionId(session.getId())
 				.title(session.getTitle())
+				.mode(session.getMode())
 				.createdAt(session.getCreatedAt())
 				.build())
 			.toList();
