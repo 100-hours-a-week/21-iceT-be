@@ -57,12 +57,12 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 		SseEmitter emitter = new SseEmitter(0L); // 무제한 SSE
 		chatEmitterRepository.save(requestDto.getSessionId(), emitter);
 
-		// 요청 내용 로깅
-		try {
-			log.info(">>> [AI 요청] /api/ai/v2/feedback/start 전송 내용:\n{}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDto));
-		} catch (Exception e) {
-			log.warn("requestDto 직렬화 실패", e);
-		}
+//		// 요청 내용 로깅
+//		try {
+//			log.info(">>> [AI 요청] /api/ai/v2/feedback/start 전송 내용:\n{}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDto));
+//		} catch (Exception e) {
+//			log.warn("requestDto 직렬화 실패", e);
+//		}
 
 
 		StringBuilder fullResponse = new StringBuilder();
@@ -126,6 +126,14 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 		// SSE emitter 생성
 		SseEmitter emitter = new SseEmitter(0L);
 		chatEmitterRepository.save(requestDto.getSessionId(), emitter);
+
+//		// 요청 내용 로깅
+//		try {
+//			log.info(">>> [AI 요청] /api/ai/v2/feedback/answer 전송 내용:\n{}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDto));
+//		} catch (Exception e) {
+//			log.warn("requestDto 직렬화 실패", e);
+//		}
+//
 
 		StringBuilder fullResponse = new StringBuilder();
 
