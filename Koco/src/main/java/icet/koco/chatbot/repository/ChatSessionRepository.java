@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface ChatSessionRepository extends JpaRepository<ChatSession, Long> {
+public interface ChatSessionRepository extends JpaRepository<ChatSession, Long>, ChatSessionRepositoryCustom {
 	// sessionId로 세션 찾기
 	Optional<ChatSession> findByIdAndDeletedAtIsNull(Long id);
 
