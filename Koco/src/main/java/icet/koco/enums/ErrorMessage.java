@@ -39,6 +39,7 @@ public enum ErrorMessage {
 	PROBLEM_NOT_FOUND("존재하지 않는 문제입니다."),
 	PROBLEM_NOT_IN_PROBLEM_SET("문제 ID %d는 문제집 ID %d에 포함되어 있지 않습니다."),
 	CHAT_SESSION_NOT_FOUND("존재하지 않는 채팅 세션입니다."),
+	RECOMMENDED_PROBLEM_NOT_FOUND("추천된 문제가 없습니다."),
 
 	ALREADY_LIKED_ERROR("이미 좋아요를 누른 게시글입니다."),
 	ALREADY_UNLIKED_ERROR("이미 좋아요 취소를 누른 게시글입니다."),
