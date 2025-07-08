@@ -68,29 +68,43 @@ public class ProblemRecommendationService {
 
 		String redisKey = "recommendation:" + userId + ":" + date;
 
-		// Redis 캐시 확인
+		// 캐시 확인
 		Object cachedObj = redisTemplate.opsForValue().get(redisKey);
 		if (cachedObj instanceof RecommendedProblemResponseDto cached) {
 			return cached;
 		}
 
-		// 전날 문제집 기준 날짜 계산
+		// 기준 날짜 계산 (전날 문제집)
 		LocalDate previousDay = getPreviousIssueDate(date);
 
-		// 전날 문제집의 문제 ID 조회
+		// 문제집 문제 ID 조회
 		List<Long> problemIds = problemSetRepository.findProblemIdsByProblemSetCreatedAt(previousDay);
-		if (problemIds.isEmpty())
+		if (problemIds.isEmpty()) {
 			throw new ResourceNotFoundException(ErrorMessage.PROBLEM_SET_NOT_FOUND);
+		}
 
-		// 설문 결과 조회 (문제집 + 유저 기준)
+		// 설문 조회
 		List<Survey> surveys = surveyRepository.findByUserIdAndProblemIdInAndProblemSetCreatedAt(
-			userId, problemIds, previousDay
-		);
+			userId, problemIds, previousDay);
 
+		// 설문 결과가 없는 경우에는 과거 캐싱된 추천 중 가장 가까운 날짜 반환
+		if (surveys.isEmpty()) {
+			for (int i = 1; i <= 7; i++) { // 최대 7일 전까지 확인
+				LocalDate pastDate = date.minusDays(i);
+				String pastKey = "recommendation:" + userId + ":" + pastDate;
+				Object fallback = redisTemplate.opsForValue().get(pastKey);
+				if (fallback instanceof RecommendedProblemResponseDto cachedPast) {
+					return cachedPast;
+				}
+			}
+			throw new ResourceNotFoundException("최근 설문 기반 추천 내역이 없습니다.");
+		}
+
+		// 설문 결과 → solvedMap 구성
 		Map<Long, Boolean> solvedMap = surveys.stream()
 			.collect(Collectors.toMap(s -> s.getProblem().getId(), Survey::isSolved));
 
-		// 유저의 설문 결과로 가능한 type 조합 계산
+		// 유저 설문 기반 type 조합
 		Set<String> userTypes = new HashSet<>();
 		for (int i = 0; i < problemIds.size(); i++) {
 			for (int j = i + 1; j < problemIds.size(); j++) {
@@ -99,14 +113,15 @@ public class ProblemRecommendationService {
 				if (s1 == null || s2 == null) continue;
 
 				String type = (s1 ? "T" : "F") + (s2 ? "T" : "F");
-				userTypes.add(type); // 예: "TT", "TF" 등
+				userTypes.add(type);
 			}
 		}
 
-		// 해당 날짜의 추천쌍 중, 설문 기반 타입과 일치하는 추천만 수집
+		// 추천쌍 필터
 		List<ProblemRecommendation> recs = problemRecommendationRepository.findAllByCreatedAtDate(date);
-		if (recs.isEmpty())
+		if (recs.isEmpty()) {
 			throw new ResourceNotFoundException(ErrorMessage.RECOMMENDED_PROBLEM_NOT_FOUND);
+		}
 
 		Set<Long> problemIdSet = new HashSet<>();
 		for (ProblemRecommendation r : recs) {
@@ -133,10 +148,11 @@ public class ProblemRecommendationService {
 			.problems(dtoList)
 			.build();
 
-		// Redis 캐싱
+		// 캐싱
 		redisTemplate.opsForValue().set(redisKey, responseDto, Duration.ofDays(2));
 		return responseDto;
 	}
+
 
 
 	public LocalDate getPreviousIssueDate(LocalDate baseDate) {
