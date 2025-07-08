@@ -2,6 +2,7 @@ package icet.koco.problemRecommendation.entity;
 
 import icet.koco.problemSet.entity.ProblemSet;
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -28,7 +29,7 @@ public class ProblemRecommendation {
 	private Long problem2Id;
 
 	@Column(name = "created_at", nullable = false)
-	private LocalDateTime createdAt;
+	private LocalDate createdAt;
 
 	public enum Type {
 		TT, FT, TF, FF

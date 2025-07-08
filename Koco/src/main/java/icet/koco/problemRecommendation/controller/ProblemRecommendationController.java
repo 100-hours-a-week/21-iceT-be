@@ -1,14 +1,20 @@
 package icet.koco.problemRecommendation.controller;
 
+import com.amazonaws.Response;
 import icet.koco.enums.ApiResponseCode;
 import icet.koco.global.dto.ApiResponse;
 import icet.koco.problemRecommendation.dto.RecommendationRequestDto;
+import icet.koco.problemRecommendation.dto.RecommendedProblemResponseDto;
 import icet.koco.problemRecommendation.service.ProblemRecommendationService;
 import icet.koco.problemSet.dto.PreviousProblemListResponseDto;
 import icet.koco.problemSet.service.ProblemService;
 import io.swagger.v3.oas.annotations.Operation;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -32,5 +38,16 @@ public class ProblemRecommendationController {
 	public ResponseEntity<Void> saveRecommendations(@RequestBody RecommendationRequestDto dto) {
 		problemRecommendationService.saveRecommendations(dto);
 		return ResponseEntity.ok().build();
+	}
+
+	@Operation(summary = "AI 추천 문제 조회 API 입니다.")
+	@GetMapping("/recommend")
+	public ResponseEntity<?> getRecommendedProblems(
+		@RequestParam("date") @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
+		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+		RecommendedProblemResponseDto responseDto = problemRecommendationService.getRecommendedProblems(userId, date);
+
+		return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.RECOMMENDED_PROBLEM_FETCH_SUCCESS, "AI 추천 문제 조회에 성공했습니다.", responseDto));
 	}
 }

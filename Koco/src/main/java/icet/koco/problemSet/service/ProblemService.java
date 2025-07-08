@@ -15,21 +15,6 @@ public class ProblemService {
 
 	private final ProblemSetRepository problemSetRepository;
 
-
-	public List<Long> getPreviousProblemIds() {
-		LocalDate previousDay = getPreviousIssueDate();
-
-		// 전날(또는 금요일) 문제집에서 문제 조회
-		List<Long> ids = problemSetRepository.findProblemIdsByProblemSetCreatedAt(previousDay);
-
-		// 전날 문제가 없으면 최근 출제 문제집 기준으로 가져옴
-		if (ids.isEmpty()) {
-			ids = problemSetRepository.findProblemIdsFromLatestProblemSet();
-		}
-
-		return ids;
-	}
-
 	// 주말이면 가장 최근 평일(금요일)로 조정
 	private LocalDate getPreviousIssueDate() {
 		LocalDate date = LocalDate.now().minusDays(1);
