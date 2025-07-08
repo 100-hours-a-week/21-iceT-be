@@ -1,6 +1,7 @@
 package icet.koco.problemSet.repository;
 
 import icet.koco.problemSet.entity.Survey;
+import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -18,4 +19,12 @@ public interface SurveyRepository extends JpaRepository<Survey, Long> {
     @Modifying
     @Query("DELETE FROM Survey s WHERE s.user.id = :userId")
     void deleteByUserId(@Param("userId")Long userId);
+
+
+	@Query("SELECT s FROM Survey s WHERE s.user.id = :userId AND s.problem.id IN :problemIds AND s.problemSet.createdAt = :createdAt")
+	List<Survey> findByUserIdAndProblemIdInAndProblemSetCreatedAt(
+		@Param("userId") Long userId,
+		@Param("problemIds") List<Long> problemIds,
+		@Param("createdAt") LocalDate createdAt
+	);
 }
