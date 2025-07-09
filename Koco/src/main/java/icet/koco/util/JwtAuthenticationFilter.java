@@ -44,6 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				|| path.equals("/api/backend/v2/chat/interview/end")
                 || path.equals("/api/backend/admin/today/problem-set")
 				|| path.equals("/api/backend/v1/problems/previous")
+				|| path.equals("/api/backend/v1/problems/recommend")
                 || path.equals("/api/backend/test/token")
                 || path.equals("/api/backend/test/timezone")
 				|| path.equals("/api/backend/test/user");
