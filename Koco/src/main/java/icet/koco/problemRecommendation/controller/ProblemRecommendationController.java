@@ -34,6 +34,7 @@ public class ProblemRecommendationController {
 		return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.PREVIOUS_PROBLEM_FETCH_SUCCESS, "전날 문제 정보를 가져오는데 성공했습니다.", responseDto));
 	}
 
+	@Operation(summary = "AI 추천 문제 쌍 저장 API입니다.")
 	@PostMapping("/recommend")
 	public ResponseEntity<Void> saveRecommendations(@RequestBody RecommendationRequestDto dto) {
 		problemRecommendationService.saveRecommendations(dto);
@@ -41,7 +42,7 @@ public class ProblemRecommendationController {
 	}
 
 	@Operation(summary = "AI 추천 문제 조회 API 입니다.")
-	@GetMapping("/recommend")
+	@GetMapping("/recommended")
 	public ResponseEntity<?> getRecommendedProblems(
 		@RequestParam("date") @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
 		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
