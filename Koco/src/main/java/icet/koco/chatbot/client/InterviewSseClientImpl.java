@@ -123,7 +123,7 @@ public class InterviewSseClientImpl implements InterviewSseClient {
 				} else {
 					try {
 						emitter.send(SseEmitter.event().name("message").data(data));
-						fullResponse.append(data).append("\n");
+						fullResponse.append(data).append(" ");
 					} catch (IOException e) {
 						emitter.completeWithError(e);
 					}
@@ -180,7 +180,7 @@ public class InterviewSseClientImpl implements InterviewSseClient {
 						emitter.completeWithError(new RuntimeException(content));
 					} else {
 						emitter.send(SseEmitter.event().name("message").data(content));
-						fullResponse.append(content).append("\n");
+						fullResponse.append(content).append(" ");
 					}
 				} catch (IOException e) {
 					emitter.completeWithError(e);
