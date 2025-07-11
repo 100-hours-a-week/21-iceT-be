@@ -1,5 +1,7 @@
 package icet.koco.user.service;
 
+import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import icet.koco.enums.ErrorMessage;
 import icet.koco.global.exception.ResourceNotFoundException;
 import icet.koco.problemSet.entity.Category;
@@ -21,6 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static icet.koco.problemSet.entity.QProblemCategory.problemCategory;
+import static icet.koco.problemSet.entity.QSurvey.survey;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -33,73 +38,101 @@ public class UserAlgorithmStatsService {
     private final SurveyRepository surveyRepository;
     private final ProblemCategoryRepository problemCategoryRepository;
 
-    // updateStatsFromSurveys - 비선형 정규화 (x^0.6 방식) 적용
-    @Transactional
-    public void updateStatsFromSurveys(Long userId) {
-        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
+	private final JPAQueryFactory queryFactory;
 
-        userAlgorithmStatsRepository.deleteByUserId(userId);
+	// record DTO 클래스
+	public static record SurveyInfo(Long problemId, Boolean isSolved) {}
 
-        List<Survey> surveys = surveyRepository.findByUserId(userId);
-        if (surveys.isEmpty()) {
-            log.info(">>>>> 유저 {} 의 설문 데이터 없음, 통계 생략", userId);
-            return;
-        }
+	public static record ProblemCategoryInfo(Long problemId, Long categoryId) {}
 
-        // 문제 ID 별로 정답 여부 저장
-        Map<Long, Boolean> problemSolvedMap = new HashMap<>();
-        for (Survey survey : surveys) {
-            problemSolvedMap.put(survey.getProblem().getId(), survey.isSolved());
-        }
+	// updateStatsFromSurveys - 비선형 정규화 (x^0.6 방식) 적용
+	@Transactional
+	public void updateStatsFromSurveys(Long userId) {
+		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
 
-        // 문제 ID -> 카테고리 ID 리스트 매핑
-        Map<Long, List<Long>> problemToCategoryMap = problemCategoryRepository.findAll().stream()
-                .collect(Collectors.groupingBy(
-                        pc -> pc.getProblem().getId(),
-                        Collectors.mapping(pc -> pc.getCategory().getId(), Collectors.toList())
-                ));
+		userAlgorithmStatsRepository.deleteByUserId(userId);
 
-        // 카테고리별 맞은 문제 수 집계
-        Map<Long, Integer> categoryCorrectCount = new HashMap<>();
-        int maxCorrect = 0;
+		// Survey 데이터 추출 (문제 ID + 정답 여부)
+		List<SurveyInfo> surveyInfos = queryFactory
+			.select(Projections.constructor(SurveyInfo.class,
+				survey.problem.id,
+				survey.isSolved
+			))
+			.from(survey)
+			.where(survey.user.id.eq(userId))
+			.fetch();
 
-        for (Map.Entry<Long, Boolean> entry : problemSolvedMap.entrySet()) {
-            Long problemId = entry.getKey();
-            Boolean isSolved = entry.getValue();
+		if (surveyInfos.isEmpty()) {
+			log.info(">>>>> 유저 {} 의 설문 데이터 없음, 통계 생략", userId);
+			return;
+		}
 
-            if (!Boolean.TRUE.equals(isSolved)) continue;
+		// 문제 ID → 정답 여부 Map
+		Map<Long, Boolean> problemSolvedMap = surveyInfos.stream()
+			.collect(Collectors.toMap(SurveyInfo::problemId, SurveyInfo::isSolved));
 
-            List<Long> categoryIds = problemToCategoryMap.getOrDefault(problemId, List.of());
-            for (Long categoryId : categoryIds) {
-                int newCount = categoryCorrectCount.getOrDefault(categoryId, 0) + 1;
-                categoryCorrectCount.put(categoryId, newCount);
-                maxCorrect = Math.max(maxCorrect, newCount);
-            }
-        }
+		// 문제 ID 목록
+		List<Long> problemIds = new ArrayList<>(problemSolvedMap.keySet());
 
-        // 통계 저장 - x^0.6 정규화 방식 사용
-        List<UserAlgorithmStats> statsToSave = new ArrayList<>();
-        for (Map.Entry<Long, Integer> entry : categoryCorrectCount.entrySet()) {
-            Long categoryId = entry.getKey();
-            int correct = entry.getValue();
+		// 문제 ID → 카테고리 ID 추출 (QueryDSL 으로 수정)
+		List<ProblemCategoryInfo> categoryInfos = queryFactory
+			.select(Projections.constructor(ProblemCategoryInfo.class,
+				problemCategory.problem.id,
+				problemCategory.category.id
+			))
+			.from(problemCategory)
+			.where(problemCategory.problem.id.in(problemIds))
+			.fetch();
 
-            double normalized = (Math.pow(correct, 0.6) / Math.pow(maxCorrect, 0.6)) * 100.0;
-            int capped = Math.min(95, (int) Math.round(normalized));
+		// 문제 → 카테고리 매핑
+		Map<Long, List<Long>> problemToCategoryMap = categoryInfos.stream()
+			.collect(Collectors.groupingBy(
+				ProblemCategoryInfo::problemId,
+				Collectors.mapping(ProblemCategoryInfo::categoryId, Collectors.toList())
+			));
 
-            Category category = categoryRepository.findById(categoryId)
-                    .orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.CATEGORY_NOT_FOUND));
+		// 카테고리별 정답 수 계산
+		Map<Long, Integer> categoryCorrectCount = new HashMap<>();
+		int maxCorrect = 0;
 
-            UserAlgorithmStats stats = UserAlgorithmStats.builder()
-                    .user(user)
-                    .category(category)
-                    .correctRate(capped) // x^0.6 정규화 적용
-                    .build();
+		for (Map.Entry<Long, Boolean> entry : problemSolvedMap.entrySet()) {
+			if (!Boolean.TRUE.equals(entry.getValue())) continue;
 
-            statsToSave.add(stats);
-        }
+			List<Long> categoryIds = problemToCategoryMap.getOrDefault(entry.getKey(), List.of());
+			for (Long categoryId : categoryIds) {
+				int newCount = categoryCorrectCount.getOrDefault(categoryId, 0) + 1;
+				categoryCorrectCount.put(categoryId, newCount);
+				maxCorrect = Math.max(maxCorrect, newCount);
+			}
+		}
 
-        userAlgorithmStatsRepository.saveAll(statsToSave);
-    }
+		// 카테고리 일괄 조회 (N+1 방지)
+		List<Category> categories = categoryRepository.findAllById(categoryCorrectCount.keySet());
+		Map<Long, Category> categoryMap = categories.stream()
+			.collect(Collectors.toMap(Category::getId, c -> c));
 
+		// 정규화 후 저장
+		List<UserAlgorithmStats> statsToSave = new ArrayList<>();
+		for (Map.Entry<Long, Integer> entry : categoryCorrectCount.entrySet()) {
+			Long categoryId = entry.getKey();
+			int correct = entry.getValue();
+
+			double normalized = (Math.pow(correct, 0.6) / Math.pow(maxCorrect, 0.6)) * 100.0;
+			int capped = Math.min(95, (int) Math.round(normalized));
+
+			Category category = categoryMap.get(categoryId);
+			if (category == null) {
+				throw new ResourceNotFoundException(ErrorMessage.CATEGORY_NOT_FOUND);
+			}
+
+			statsToSave.add(UserAlgorithmStats.builder()
+				.user(user)
+				.category(category)
+				.correctRate(capped)
+				.build());
+		}
+		
+		userAlgorithmStatsRepository.saveAll(statsToSave);
+	}
 }
