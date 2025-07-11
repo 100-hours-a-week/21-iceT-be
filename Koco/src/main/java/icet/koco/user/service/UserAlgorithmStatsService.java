@@ -5,7 +5,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import icet.koco.enums.ErrorMessage;
 import icet.koco.global.exception.ResourceNotFoundException;
 import icet.koco.problemSet.entity.Category;
-import icet.koco.problemSet.entity.Survey;
 import icet.koco.problemSet.repository.CategoryRepository;
 import icet.koco.problemSet.repository.ProblemCategoryRepository;
 import icet.koco.problemSet.repository.SurveyRepository;
@@ -132,7 +131,6 @@ public class UserAlgorithmStatsService {
 				.correctRate(capped)
 				.build());
 		}
-		
 		userAlgorithmStatsRepository.saveAll(statsToSave);
 	}
 }

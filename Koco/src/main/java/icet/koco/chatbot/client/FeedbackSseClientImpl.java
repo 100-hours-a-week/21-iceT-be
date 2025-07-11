@@ -104,7 +104,7 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 				} else {
 					try {
 						emitter.send(SseEmitter.event().name("message").data(data));
-						fullResponse.append(data).append("\n"); // 정제된 내용 저장
+						fullResponse.append(data).append(" "); // 정제된 내용 저장
 					} catch (IOException e) {
 						emitter.completeWithError(e);
 					}
