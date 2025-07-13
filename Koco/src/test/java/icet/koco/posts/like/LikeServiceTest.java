@@ -1,4 +1,4 @@
-package icet.koco.like;
+package icet.koco.posts.like;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
@@ -9,6 +9,7 @@ import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
+import icet.koco.enums.ErrorMessage;
 import icet.koco.global.exception.AlreadyLikedException;
 import icet.koco.global.exception.ForbiddenException;
 import icet.koco.global.exception.ResourceNotFoundException;
@@ -57,6 +58,7 @@ class LikeServiceTest {
         user = User.builder().id(userId).build();
         post = Post.builder()
             .id(postId)
+			.user(user)
             .likeCount(0)
             .version(0L)
             .build();
@@ -95,7 +97,7 @@ class LikeServiceTest {
             // when & then
             assertThatThrownBy(() -> likeService.createLike(userId, postId))
                 .isInstanceOf(AlreadyLikedException.class)
-                .hasMessage("이미 좋아요를 누른 게시글입니다.");
+                .hasMessage(ErrorMessage.ALREADY_LIKED_ERROR.getMessage());
         }
 
         @Test
@@ -117,7 +119,7 @@ class LikeServiceTest {
             // when & then
             assertThatThrownBy(() -> likeService.createLike(userId, postId))
                 .isInstanceOf(RuntimeException.class)
-                .hasMessage("동시성 문제로 좋아요 등록에 실패했습니다.");
+                .hasMessage(ErrorMessage.LIKE_CONCURRENCY_FAILURE.getMessage());
         }
     }
 
@@ -163,7 +165,7 @@ class LikeServiceTest {
             // when & then
             assertThatThrownBy(() -> likeService.deleteLike(userId, postId))
                 .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("존재하지 않는 사용자입니다.");
+                .hasMessage(ErrorMessage.USER_NOT_FOUND.getMessage());
         }
 
         @Test
@@ -176,7 +178,7 @@ class LikeServiceTest {
             // when & then
             assertThatThrownBy(() -> likeService.deleteLike(userId, postId))
                 .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("존재하지 않는 게시글입니다.");
+                .hasMessage(ErrorMessage.POST_NOT_FOUND.getMessage());
         }
 
         @Test
@@ -190,7 +192,7 @@ class LikeServiceTest {
             // when
             assertThatThrownBy(() -> likeService.deleteLike(userId, postId))
                 .isInstanceOf(AlreadyLikedException.class)
-                .hasMessage("이미 좋아요 취소를 한 게시글입니다.");
+                .hasMessage(ErrorMessage.ALREADY_UNLIKED_ERROR.getMessage());
         }
 
         @Test
@@ -205,7 +207,7 @@ class LikeServiceTest {
             // when
             assertThatThrownBy(() -> likeService.deleteLike(userId, postId))
                 .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("좋아요가 존재하지 않습니다.");
+                .hasMessage(ErrorMessage.LIKE_NOT_FOUND.getMessage());
 
         }
 
@@ -224,7 +226,7 @@ class LikeServiceTest {
             // when & then
             assertThatThrownBy(() -> likeService.deleteLike(userId, postId))
                 .isInstanceOf(ForbiddenException.class)
-                .hasMessage("본인의 좋아요만 취소할 수 있습니다.");
+                .hasMessage(ErrorMessage.NO_LIKE_PERMISSION.getMessage());
         }
 
         @Test
@@ -253,7 +255,7 @@ class LikeServiceTest {
             // when & then
             assertThatThrownBy(() -> likeService.deleteLike(userId, postId))
                 .isInstanceOf(RuntimeException.class)
-                .hasMessage("동시성 문제로 좋아요 취소에 실패했습니다.");
+                .hasMessage(ErrorMessage.LIKE_CONCURRENCY_FAILURE.getMessage());
         }
     }
 }

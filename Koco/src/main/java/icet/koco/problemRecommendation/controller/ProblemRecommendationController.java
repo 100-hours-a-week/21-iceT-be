@@ -1,6 +1,5 @@
 package icet.koco.problemRecommendation.controller;
 
-import com.amazonaws.Response;
 import icet.koco.enums.ApiResponseCode;
 import icet.koco.global.dto.ApiResponse;
 import icet.koco.problemRecommendation.dto.RecommendationRequestDto;

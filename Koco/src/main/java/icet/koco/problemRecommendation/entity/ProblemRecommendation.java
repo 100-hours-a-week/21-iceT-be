@@ -1,11 +1,8 @@
 package icet.koco.problemRecommendation.entity;
 
-import icet.koco.problemSet.entity.ProblemSet;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "problem_recommendation")

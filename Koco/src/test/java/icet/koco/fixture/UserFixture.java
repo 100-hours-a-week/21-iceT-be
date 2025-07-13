@@ -4,9 +4,9 @@ import icet.koco.user.entity.User;
 
 public class UserFixture {
 
-	public static User validUser() {
+	public static User validUser(Long userId) {
 		return User.builder()
-			.id(1L)
+			.id(userId)
 			.name("테스트 유저")
 			.nickname("테스트 닉네임")
 			.email("test@test.com")

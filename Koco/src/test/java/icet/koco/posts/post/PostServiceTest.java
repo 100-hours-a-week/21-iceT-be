@@ -1,4 +1,4 @@
-package icet.koco.post;
+package icet.koco.posts.post;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -100,7 +100,7 @@ public class PostServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		user = UserFixture.validUser();
+		user = UserFixture.validUser(VALID_USER_ID);
 		category = CategoryFixture.category(1L, CATEGORY_DP);
 		problem = ProblemFixture.problem(1L, VALID_PROBLEM_NUMBER);
 		post = PostFixture.postWithCategory(user, category, VALID_POST_ID, VALID_PROBLEM_NUMBER);
