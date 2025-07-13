@@ -67,10 +67,10 @@ public class CommentService {
 
     @Transactional
     public CommentCreateEditResponseDto editComment(Long userId, Long postId, Long commentId, CommentCreateEditRequestDto requestDto) {
-		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+		userRepository.findByIdAndDeletedAtIsNull(userId)
 			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.USER_NOT_FOUND));
 
-		Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
+		postRepository.findByIdAndDeletedAtIsNull(postId)
 			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.POST_NOT_FOUND));
 
         Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
