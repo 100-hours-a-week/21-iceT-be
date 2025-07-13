@@ -93,6 +93,24 @@ tasks.withType(JavaCompile).configureEach {
 
 
 jacocoTestReport {
+
+    afterEvaluate {
+        classDirectories.setFrom(
+                files(classDirectories.files.collect {
+                    fileTree(dir: it, exclude: [
+                            '**/dto/**',
+                            '**/entity/**',
+                            '**/Q*',
+                            '**/*Builder',
+                            '**/*Dto*',
+                            '**/*Response*',
+                            '**/*Request*',
+                            '**/*$*$*' // 람다 함수 메서드 등 내부 메서드 제외
+                    ])
+                })
+        )
+    }
+
     // jacocoTestReport가 끝나면 jacocoTestCoverageVerification 동작
     finalizedBy 'jacocoTestCoverageVerification'
 }
