@@ -33,7 +33,7 @@ import reactor.core.publisher.Flux;
 @RequiredArgsConstructor
 public class InterviewSseClientImpl implements InterviewSseClient {
 
-	@Value("${AI_BASE_URL}")
+	@Value("${ai.base-url}")
 	private String baseUrl;
 
 	private final ChatEmitterRepository chatEmitterRepository;
@@ -45,6 +45,8 @@ public class InterviewSseClientImpl implements InterviewSseClient {
 
 	@PostConstruct
 	public void initWebClient() {
+		log.info("AI_BASE_URL: {}", baseUrl);
+
 		this.webClient = WebClient.builder()
 			.baseUrl(baseUrl)
 			.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -63,7 +65,7 @@ public class InterviewSseClientImpl implements InterviewSseClient {
 
 		// 요청 내용 로깅
 		try {
-			log.debug(">>> [AI 요청] /api/ai/v2/interview/start 전송 내용:\n{}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDto));
+			log.info(">>> [AI 요청] /api/ai/v2/interview/start 전송 내용:\n{}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDto));
 		} catch (Exception e) {
 			log.warn("requestDto 직렬화 실패", e);
 		}
@@ -152,7 +154,7 @@ public class InterviewSseClientImpl implements InterviewSseClient {
 
 		// 요청 내용 로깅
 		try {
-			log.debug(">>> [AI 요청] /api/ai/v2/interview/answer 전송 내용:\n{}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDto));
+			log.info(">>> [AI 요청] /api/ai/v2/interview/answer 전송");
 		} catch (Exception e) {
 			log.warn("requestDto 직렬화 실패", e);
 		}

@@ -33,7 +33,7 @@ import reactor.core.publisher.Flux;
 @RequiredArgsConstructor
 public class FeedbackSseClientImpl implements FeedbackSseClient {
 
-	@Value("${AI_BASE_URL}")
+	@Value("${ai.base-url}")
 	private String baseUrl;
 
 
@@ -46,6 +46,8 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 
 	@PostConstruct
 	public void initWebClient() {
+		log.info("AI_BASE_URL: {}", baseUrl);
+
 		this.webClient = WebClient.builder()
 			.baseUrl(baseUrl)
 			.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -59,7 +61,7 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 
 		// 요청 내용 로깅
 		try {
-			log.debug(">>> [AI 요청] /api/ai/v2/feedback/start 전송 내용:\n{}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDto));
+			log.info(">>> [AI 요청] /api/ai/v2/feedback/start 전송 내용:\n{}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDto));
 		} catch (Exception e) {
 			log.warn("requestDto 직렬화 실패", e);
 		}
@@ -129,7 +131,7 @@ public class FeedbackSseClientImpl implements FeedbackSseClient {
 
 		// 요청 내용 로깅
 		try {
-			log.debug(">>> [AI 요청] /api/ai/v2/feedback/answer 전송 내용:\n{}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDto));
+			log.info(">>> [AI 요청] /api/ai/v2/feedback/answer 전송");
 		} catch (Exception e) {
 			log.warn("requestDto 직렬화 실패", e);
 		}
