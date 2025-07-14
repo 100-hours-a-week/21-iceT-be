@@ -61,11 +61,11 @@ public class InterviewSseClientImpl implements InterviewSseClient {
 		SseEmitter emitter = new SseEmitter(0L);
 		chatEmitterRepository.save(requestDto.getSessionId(), emitter);
 
-		try {
-			log.info(">>> [AI 요청] /api/ai/v2/interview/start 전송 내용:\n{}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDto));
-		} catch (Exception e) {
-			log.warn("requestDto 직렬화 실패", e);
-		}
+//		try {
+//			log.info(">>> [AI 요청] /api/ai/v2/interview/start 전송 내용:\n{}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDto));
+//		} catch (Exception e) {
+//			log.warn("requestDto 직렬화 실패", e);
+//		}
 
 
 		StringBuilder fullResponse = new StringBuilder();
@@ -180,7 +180,7 @@ public class InterviewSseClientImpl implements InterviewSseClient {
 						emitter.completeWithError(new RuntimeException(content));
 					} else {
 						emitter.send(SseEmitter.event().name("message").data(content));
-						fullResponse.append(content).append(" ");
+						fullResponse.append(content);
 					}
 				} catch (IOException e) {
 					emitter.completeWithError(e);
