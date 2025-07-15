@@ -21,6 +21,7 @@ import icet.koco.problemSet.repository.CategoryRepository;
 import icet.koco.problemSet.repository.ProblemRepository;
 import icet.koco.user.entity.User;
 import icet.koco.user.repository.UserRepository;
+import java.time.Duration;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
@@ -115,7 +116,7 @@ public class PostService {
 		// Redis에 없으면 DB에서 조회 후 저장
 		if (likeCount == null) {
 			likeCount = likeRepository.countByPostId(postId);
-			likeCountCacheService.setLikeCount(postId, likeCount);
+			likeCountCacheService.setLikeCount(postId, likeCount, Duration.ofMinutes(5));
 			log.info("Like count DB에서 조회 후 저장 | 게시글: {}, 좋아요 수: {}", postId,likeCount);
 		}
 
@@ -251,7 +252,7 @@ public class PostService {
 				// 없으면 DB 값 사용하고 캐시에 저장
 				if (likeCount == null) {
 					likeCount = likeRepository.countByPostId(postId);
-					likeCountCacheService.setLikeCount(postId, likeCount);
+					likeCountCacheService.setLikeCount(postId, likeCount, Duration.ofMinutes(5));
 					log.info("Like count DB에서 조회 후 저장 | 게시글: {}, 좋아요 수: {}", postId,likeCount);
 				}
 
@@ -307,7 +308,7 @@ public class PostService {
 				// 없으면 DB 값 사용하고 캐시에 저장
 				if (likeCount == null) {
 					likeCount = likeRepository.countByPostId(postId);
-					likeCountCacheService.setLikeCount(postId, likeCount);
+					likeCountCacheService.setLikeCount(postId, likeCount, Duration.ofMinutes(5));
 					log.info("Like count DB에서 조회 후 저장 | 게시글: {}, 좋아요 수: {}", postId,likeCount);
 				}
 

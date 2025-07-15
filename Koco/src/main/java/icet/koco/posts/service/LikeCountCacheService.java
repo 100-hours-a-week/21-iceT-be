@@ -1,5 +1,6 @@
 package icet.koco.posts.service;
 
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -21,8 +22,8 @@ public class LikeCountCacheService {
 		return null;
 	}
 
-	public void setLikeCount(Long postId, Integer count) {
-		redisTemplate.opsForValue().set(getKey(postId), count);
+	public void setLikeCount(Long postId, Integer count, Duration ttl) {
+		redisTemplate.opsForValue().set(getKey(postId), count, ttl);
 	}
 
 	public void increment(Long postId) {
