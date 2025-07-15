@@ -39,6 +39,7 @@ public class PostService {
 	private final LikeRepository likeRepository;
 	private final PostCategoryRepository postCategoryRepository;
 	private final ProblemRepository problemRepository;
+	private final LikeCountCacheService likeCountCacheService;
 
 	/**
 	 * 게시글 등록
@@ -107,8 +108,18 @@ public class PostService {
 		Post post = postRepository.findByIdWithUserAndCategories(postId)
 			.orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.POST_NOT_FOUND));
 
-		// 댓글, 좋아요 수
-		Integer likeCount = likeRepository.countByPostId(postId);
+		// 좋아요 수 (Redis)
+		Integer likeCount = likeCountCacheService.getLikeCount(postId);
+		log.info("Like count Redis에서 가져옴 | 게시글: {}, 좋아요 수: {}", postId,likeCount);
+
+		// Redis에 없으면 DB에서 조회 후 저장
+		if (likeCount == null) {
+			likeCount = likeRepository.countByPostId(postId);
+			likeCountCacheService.setLikeCount(postId, likeCount);
+			log.info("Like count DB에서 조회 후 저장 | 게시글: {}, 좋아요 수: {}", postId,likeCount);
+		}
+
+		// 댓글 수
 		Integer commentCount = commentRepository.countByPostIdAndDeletedAtIsNull(postId);
 
 		// 로그인된 유저가 좋아요를 눌렀는지 여부
@@ -230,26 +241,42 @@ public class PostService {
 		}
 
 		List<PostListGetResponseDto.PostDetailDto> postDtos = posts.stream()
-			.map(post -> PostListGetResponseDto.PostDetailDto.builder()
-				.postId(post.getId())
-				.problemNumber(post.getProblemNumber())
-				.title(post.getTitle())
-				.createdAt(post.getCreatedAt())
-				.categories(post.getPostCategories().stream()
-					.map(pc -> PostListGetResponseDto.CategoryDto.builder()
-						.categoryId(pc.getCategory().getId())
-						.categoryName(pc.getCategory().getName())
+			.map(post -> {
+				Long postId = post.getId();
+
+				// Redis 캐시에서 likeCount 조회
+				Integer likeCount = likeCountCacheService.getLikeCount(postId);
+				log.info("Like count Redis에서 가져옴 | 게시글: {}, 좋아요 수: {}", postId,likeCount);
+
+				// 없으면 DB 값 사용하고 캐시에 저장
+				if (likeCount == null) {
+					likeCount = likeRepository.countByPostId(postId);
+					likeCountCacheService.setLikeCount(postId, likeCount);
+					log.info("Like count DB에서 조회 후 저장 | 게시글: {}, 좋아요 수: {}", postId,likeCount);
+				}
+
+				return PostListGetResponseDto.PostDetailDto.builder()
+					.postId(postId)
+					.problemNumber(post.getProblemNumber())
+					.title(post.getTitle())
+					.createdAt(post.getCreatedAt())
+					.categories(post.getPostCategories().stream()
+						.map(pc -> PostListGetResponseDto.CategoryDto.builder()
+							.categoryId(pc.getCategory().getId())
+							.categoryName(pc.getCategory().getName())
+							.build())
+						.toList())
+					.author(PostListGetResponseDto.AuthorDto.builder()
+						.userId(post.getUser().getId())
+						.nickname(post.getUser().getNickname())
+						.imgUrl(post.getUser().getProfileImgUrl())
 						.build())
-					.toList())
-				.author(PostListGetResponseDto.AuthorDto.builder()
-					.userId(post.getUser().getId())
-					.nickname(post.getUser().getNickname())
-					.imgUrl(post.getUser().getProfileImgUrl())
-					.build())
-				.commentCount(post.getCommentCount())
-				.likeCount(post.getLikeCount())
-				.build())
+					.commentCount(post.getCommentCount())
+					.likeCount(likeCount)
+					.build();
+			})
 			.toList();
+
 
 		return PostListGetResponseDto.builder()
 			.nextCursorId(nextCursorId)
@@ -270,25 +297,40 @@ public class PostService {
 		}
 
 		List<PostListGetResponseDto.PostDetailDto> postDtos = posts.stream()
-			.map(post -> PostListGetResponseDto.PostDetailDto.builder()
-				.postId(post.getId())
-				.problemNumber(post.getProblemNumber())
-				.title(post.getTitle())
-				.createdAt(post.getCreatedAt())
-				.categories(post.getPostCategories().stream()
-					.map(pc -> PostListGetResponseDto.CategoryDto.builder()
-						.categoryId(pc.getCategory().getId())
-						.categoryName(pc.getCategory().getName())
+			.map(post -> {
+				Long postId = post.getId();
+
+				// Redis 캐시에서 likeCount 조회
+				Integer likeCount = likeCountCacheService.getLikeCount(postId);
+				log.info("Like count Redis에서 가져옴 | 게시글: {}, 좋아요 수: {}", postId,likeCount);
+
+				// 없으면 DB 값 사용하고 캐시에 저장
+				if (likeCount == null) {
+					likeCount = likeRepository.countByPostId(postId);
+					likeCountCacheService.setLikeCount(postId, likeCount);
+					log.info("Like count DB에서 조회 후 저장 | 게시글: {}, 좋아요 수: {}", postId,likeCount);
+				}
+
+				return PostListGetResponseDto.PostDetailDto.builder()
+					.postId(postId)
+					.problemNumber(post.getProblemNumber())
+					.title(post.getTitle())
+					.createdAt(post.getCreatedAt())
+					.categories(post.getPostCategories().stream()
+						.map(pc -> PostListGetResponseDto.CategoryDto.builder()
+							.categoryId(pc.getCategory().getId())
+							.categoryName(pc.getCategory().getName())
+							.build())
+						.toList())
+					.author(PostListGetResponseDto.AuthorDto.builder()
+						.userId(post.getUser().getId())
+						.nickname(post.getUser().getNickname())
+						.imgUrl(post.getUser().getProfileImgUrl())
 						.build())
-					.toList())
-				.author(PostListGetResponseDto.AuthorDto.builder()
-					.userId(post.getUser().getId())
-					.nickname(post.getUser().getNickname())
-					.imgUrl(post.getUser().getProfileImgUrl())
-					.build())
-				.commentCount(post.getCommentCount())
-				.likeCount(post.getLikeCount())
-				.build())
+					.commentCount(post.getCommentCount())
+					.likeCount(likeCount)
+					.build();
+			})
 			.toList();
 
 		return PostListGetResponseDto.builder()
