@@ -12,5 +12,5 @@ public interface ProblemRepository extends JpaRepository<Problem, Long> {
     Optional<Problem> findByNumber(Long Number);
 
     List<Problem> findByNumberIn(List<Long> numbers);
-
 }
+

@@ -7,6 +7,8 @@ public enum ErrorMessage {
     // 400 (Bad Request - BadRequestException)
     INVALID_CATEGORY_INCLUDED("존재하지 않는 카테고리가 포함되어 있습니다."),
     INVALID_PROBLEM_INCLUDED("해당 문제 번호를 가진 백준 문제가 없습니다."),
+	INTERVIEW_ALREADY_FINISHED("이미 종료된 면접 세션입니다."),
+
 
     // 401 (Unauthorized - UnauthorizedException)
 	INVALID_ACCESS_TOKEN("유효하지 않은 access token 입니다."),
@@ -22,6 +24,7 @@ public enum ErrorMessage {
     NO_COMMENT_PERMISSION("댓글 수정/삭제 권한이 없습니다."),
 	NO_ALARM_PERMISSION("해당 알림을 읽음/삭제할 권한이 없습니다."),
 	NO_LIKE_PERMISSION("본인의 좋아요만 취소할 수 있습니다."),
+	NO_CHAT_HISTORY_PERMISSION("채팅 이력을 볼 권한이 없습니다."),
 
 
     // 404 (Not Found - ResourceNotFoundException)
@@ -35,6 +38,8 @@ public enum ErrorMessage {
 	SOLUTION_NOT_FOUND("존재하지 않는 해설입니다."),
 	PROBLEM_NOT_FOUND("존재하지 않는 문제입니다."),
 	PROBLEM_NOT_IN_PROBLEM_SET("문제 ID %d는 문제집 ID %d에 포함되어 있지 않습니다."),
+	CHAT_SESSION_NOT_FOUND("존재하지 않는 채팅 세션입니다."),
+	RECOMMENDED_PROBLEM_NOT_FOUND("추천된 문제가 없습니다."),
 
 	ALREADY_LIKED_ERROR("이미 좋아요를 누른 게시글입니다."),
 	ALREADY_UNLIKED_ERROR("이미 좋아요 취소를 누른 게시글입니다."),
