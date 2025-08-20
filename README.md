@@ -51,7 +51,7 @@
 <table>
   <tr>
     <td align="center">
-      <a href="https://github.com/saera-yook"><img src="https://avatars.githubusercontent.com/u/103042868?v=4" alt="helen" width="100" height="100" style="object-fit: cover; border-radius: 10px;"></a>
+      <a href="https://github.com/hyemimi"><img src="https://avatars.githubusercontent.com/u/103042868?v=4" alt="helen" width="100" height="100" style="object-fit: cover; border-radius: 10px;"></a>
       <br />
       <strong>Helen</strong>
       <br />
@@ -65,35 +65,35 @@
       ⚙️ BE
     </td>
     <td align="center">
-      <a href="https://github.com/jbilee"><img src="https://avatars.githubusercontent.com/u/150672915?v=4" alt="evan" width="100" height="100" style="object-fit: cover; border-radius: 10px;"></a>
+      <a href="https://github.com/KIMSEOKWON00"><img src="https://avatars.githubusercontent.com/u/150672915?v=4" alt="evan" width="100" height="100" style="object-fit: cover; border-radius: 10px;"></a>
       <br />
       <strong>Evan</strong>
       <br />
       ☁️ Cloud
     </td>
     <td align="center">
-      <a href="https://github.com/dbsdndcks"><img src="https://avatars.githubusercontent.com/u/63413687?v=4" alt="sophie" width="100" height="100" style="object-fit: cover; border-radius: 10px;"></a>
+      <a href="https://github.com/Kim-Min-Gyeong"><img src="https://avatars.githubusercontent.com/u/63413687?v=4" alt="sophie" width="100" height="100" style="object-fit: cover; border-radius: 10px;"></a>
       <br />
       <strong>Sophie</strong>
       <br />
       ☁️ Cloud
     </td>
     <td align="center">
-      <a href="https://github.com/eunsoa"><img src="https://avatars.githubusercontent.com/u/102472949?v=4" alt="noah" width="100" height="100" style="object-fit: cover; border-radius: 10px;"></a>
+      <a href="https://github.com/buhyun1"><img src="https://avatars.githubusercontent.com/u/102472949?v=4" alt="noah" width="100" height="100" style="object-fit: cover; border-radius: 10px;"></a>
       <br />
       <strong>Noah</strong>
       <br />
       ☁️ Cloud
     </td>
     <td align="center">
-      <a href="https://github.com/youdame"><img src="https://avatars.githubusercontent.com/u/163096837?v=4" alt="milo" width="100" height="100" style="object-fit: cover; border-radius: 10px;"></a>
+      <a href="https://github.com/junn0s"><img src="https://avatars.githubusercontent.com/u/163096837?v=4" alt="milo" width="100" height="100" style="object-fit: cover; border-radius: 10px;"></a>
       <br />
       <strong>Milo</strong>
       <br />
       🤖 AI
     </td>
     <td align="center">
-      <a href="https://github.com/kaori-killer"><img src="https://avatars.githubusercontent.com/u/154714848?v=4" alt="yohan" width="100" height="100" style="object-fit: cover; border-radius: 10px;"></a>
+      <a href="https://github.com/wint3rx3"><img src="https://avatars.githubusercontent.com/u/154714848?v=4" alt="yohan" width="100" height="100" style="object-fit: cover; border-radius: 10px;"></a>
       <br />
       <strong>Yohan</strong>
       <br />
